@@ -1,0 +1,129 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+
+  .font-mono, .code-font {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+/* Custom scrollbars for clean UI */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.25);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.45);
+}
+
+/* Romantic Dating App Floating Hearts Animation */
+@keyframes float-heart {
+  0% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-12px) rotate(8deg) scale(1.1);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+    opacity: 0.4;
+  }
+}
+
+@keyframes float-heart-reverse {
+  0% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-16px) rotate(-10deg) scale(1.15);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+    opacity: 0.4;
+  }
+}
+
+@keyframes pulse-heart-subtle {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.14);
+  }
+}
+
+.animate-float-heart {
+  animation: float-heart 5s ease-in-out infinite;
+}
+
+.animate-float-heart-reverse {
+  animation: float-heart-reverse 6.5s ease-in-out infinite;
+}
+
+.animate-pulse-heart {
+  animation: pulse-heart-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes anime-bob {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-anime-bob {
+  animation: anime-bob 3s ease-in-out infinite;
+}
+
+@layer base {
+  html { background: #020617; }
+  body { margin: 0; min-width: 320px; }
+  #root { min-height: 100dvh; }
+  img, video, canvas { max-width: 100%; }
+  button, a, input, select, textarea { touch-action: manipulation; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 2px solid #34d399; outline-offset: 3px; }
+}
+
+.safe-area-bottom { padding-bottom: env(safe-area-inset-bottom); }
+@media (max-width: 1279px) {
+  .app-content { padding-bottom: calc(5rem + env(safe-area-inset-bottom)); }
+}
+@media (max-width: 639px) {
+  /* Prevent iOS from zooming into small form controls. */
+  input, select, textarea { font-size: 16px !important; }
+  button { min-height: 40px; }
+  p, h1, h2, h3 { overflow-wrap: anywhere; }
+}
+
+/* Subtle wallpaper keeps the conversation legible in the dark chat theme. */
+.chat-wallpaper {
+  background-color: #0b141a;
+  background-image: radial-gradient(circle at 12px 12px, #203039 1px, transparent 1.5px),
+    radial-gradient(circle at 32px 32px, #1b2a32 2px, transparent 2.5px);
+  background-size: 44px 44px;
+}
+.whatsapp-chat { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }

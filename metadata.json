@@ -1,0 +1,9 @@
+{
+  "name": "CipherDate · Verified Local Dating",
+  "description": "Private, location-based dating for verified local singles featuring biometric identity authentication and zero-knowledge end-to-end encrypted messaging.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
