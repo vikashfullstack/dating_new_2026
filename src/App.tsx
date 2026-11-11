@@ -1,3 +1,5 @@
+import { SoundAlerts } from './components/SoundAlerts';
+import { notificationSounds } from './services/notificationSounds';
 import { apiUrl } from './services/api';
 /**
  * @license
@@ -241,6 +243,8 @@ export default function App() {
       }
       localStorage.removeItem('cipherdate_session_token');
     }
+    notificationSounds.disable();
+    notificationSounds.stopRinging();
     wsService.disconnect();
     setChatSessions([]);
     setIsLoggedIn(false);
@@ -248,12 +252,16 @@ export default function App() {
     setIsAuthModalOpen(true);
   };
 
-  // Initial Pre-Configured Encrypted Chat Sessions
+  const alertedMessageIds = React.useRef(new Set<string>());
+
+  // Conversations for the signed-in account
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
 
   useEffect(() => {
     setChatSessions([]);
     setActiveChatId(null);
+    alertedMessageIds.current.clear();
+    notificationSounds.stopRinging();
   }, [currentUser.id]);
 
   // Connect to Real-Time WebSocket Server and subscribe to E2EE Messages & Signal Protocol Events
@@ -293,6 +301,10 @@ export default function App() {
       const peerId = own ? message.recipientId : message.senderId;
       const plainText = await decryptPayload(message.ciphertext, message.iv, message.salt);
       if (disposed) return;
+      if (!alertedMessageIds.current.has(message.id)) {
+        alertedMessageIds.current.add(message.id);
+        if (!own && !message.isHistory) notificationSounds.message();
+      }
       const received: EncryptedMessage = { ...message, plainText, isDecrypted: true };
       const safety = await generateSafetyNumber(currentUser.id, peerId);
       if (disposed) return;
@@ -579,6 +591,8 @@ export default function App() {
         isLoggedIn={isLoggedIn}
         onLogout={handleLogout}
       />
+
+      {isLoggedIn && <SoundAlerts />}
 
       {/* 500 Token Welcome Grant Floating Celebration Alert */}
       {welcomeAlert && (

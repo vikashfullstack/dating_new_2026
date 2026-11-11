@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { SingleProfile, UserCurrentProfile } from '../types';
+import { notificationSounds } from '../services/notificationSounds';
 import { wsService, SignalEvent } from '../services/websocketService';
 
 export function CallPanel({ currentUser, profiles }: { currentUser: UserCurrentProfile; profiles: SingleProfile[] }) {
@@ -25,6 +26,7 @@ export function CallPanel({ currentUser, profiles }: { currentUser: UserCurrentP
   }
   function end(notify = true) {
     if (notify) signal('signal:call-hangup');
+    notificationSounds.stopRinging();
     generation.current++;
     if (timer.current) clearTimeout(timer.current);
     if (pc.current) { pc.current.onconnectionstatechange = null; pc.current.close(); }
@@ -68,6 +70,7 @@ export function CallPanel({ currentUser, profiles }: { currentUser: UserCurrentP
   async function accept() {
     const incoming = offer.current;
     if (!incoming) return;
+    notificationSounds.stopRinging();
     setCall(c => c ? { ...c, status: 'Connecting…' } : c);
     try {
       const connection = await prepare(); if (!connection) return;
@@ -102,6 +105,7 @@ export function CallPanel({ currentUser, profiles }: { currentUser: UserCurrentP
           }
           const next = { id: incoming.chatId!, peer: incoming.senderId!, name: profileRef.current.find(p => p.id === incoming.senderId)?.name || 'Incoming caller', type: incoming.callType || 'audio', status: 'Incoming call' };
           state.current = next; setCall(next); setError(''); offer.current = incoming; armTimeout();
+          notificationSounds.startRinging();
           // Candidates can arrive before the offer; only apply them after acceptance.
         } else if (incoming.chatId === state.current?.id && incoming.senderId === state.current?.peer) {
           if (incoming.type === 'signal:call-hangup') end(false);
@@ -125,7 +129,8 @@ export function CallPanel({ currentUser, profiles }: { currentUser: UserCurrentP
   return <>
     {error && <div role="alert" className="fixed bottom-24 left-4 right-4 z-50 bg-slate-900 border border-rose-500 p-4 rounded-xl">{error}<button className="ml-4 underline" onClick={()=>setError('')}>Dismiss</button></div>}
     {call && <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"><div role="dialog" aria-label="Call" className="bg-slate-900 p-6 rounded-2xl space-y-4 w-full max-w-lg">
-      <h2>{call.name} · {call.type} call</h2><p role="status">{call.status}</p>
+      <h2>{call.name} · {call.type} call</h2>
+      {call.status === 'Incoming call' && !notificationSounds.isEnabled() && <button className="underline text-emerald-300" onClick={()=>{ void notificationSounds.enable().catch(e=>setError(e.message)); }}>Enable ringtone</button>}<p role="status">{call.status}</p>
       <video ref={remote} autoPlay playsInline controls className={call.type === 'video' ? 'w-full rounded-xl' : 'h-12 w-full'} />
       {call.type === 'video' && <video ref={local} autoPlay muted playsInline className="w-32 rounded-xl" />}
       <div className="flex flex-wrap gap-3">

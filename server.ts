@@ -229,7 +229,7 @@ wss.on('connection', (ws: WebSocket) => {
 
           broadcastPresence();
           for (const stored of await encryptedMessageStore.forUser(session.user.id)) {
-            if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'chat:incoming', message: stored }));
+            if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'chat:incoming', message: { ...(stored as StoredEncryptedMessage), isHistory: true } }));
           }
           break;
         }

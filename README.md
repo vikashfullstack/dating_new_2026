@@ -98,3 +98,14 @@ Run `node tests/realtime.integration.mjs` to test the real server handlers with
 isolated in-memory persistence and two WebSocket clients, without changing the
 configured database. This verifies message transport and call signaling; actual
 microphone/camera media must also be tested in two browsers.
+
+### Sound alerts while the site is open
+
+After signing in, tap **Enable sounds** on each phone/browser page. New incoming
+messages play a chime, and incoming calls ring until accepted, declined, ended,
+or timed out. **Mute alerts** silences both. Restored chat history does not chime.
+Browsers require the initial tap to allow audio; tap Enable sounds again after a
+reload or if the browser suspends audio. The recipient must stay signed in with
+the site open. These alerts do not wake a locked phone or a closed browser.
+
+Run `node --import tsx tests/notification-sounds.ts` for sound lifecycle tests.

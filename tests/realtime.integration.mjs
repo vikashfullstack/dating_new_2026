@@ -46,7 +46,10 @@ try {
     assert.equal(event.senderId,alice.user.id);assert.equal(event.chatId,'call1');
   }
   const replay=await connect(bob);
-  assert.equal((await wait(replay.inbox,p=>p.type==='chat:incoming')).message.id,'m1');
+  const history = (await wait(replay.inbox,p=>p.type==='chat:incoming')).message;
+  assert.equal(history.id,'m1');
+  assert.equal(history.isHistory,true,'History replay must not trigger notification sounds');
+  assert.equal(incoming.message.isHistory,undefined,'Live messages may trigger notification sounds');
   const unauth=new WebSocket(`ws://127.0.0.1:${port}/ws`);sockets.push(unauth);
   await new Promise(resolve=>unauth.once('open',resolve));
   const closed=new Promise(resolve=>unauth.once('close',resolve));
