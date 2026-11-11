@@ -19,6 +19,8 @@ import { JAMSHEDPUR_LOCALITIES, findNearestLocality, calculateDistanceKm } from 
 interface DiscoverViewProps {
   currentUser: UserCurrentProfile;
   profiles: SingleProfile[];
+  isLoading?: boolean;
+  loadError?: string | null;
   likedProfileIds: string[];
   onLike: (profile: SingleProfile) => void;
   onPass: (profile: SingleProfile) => void;
@@ -32,6 +34,8 @@ interface DiscoverViewProps {
 export const DiscoverView: React.FC<DiscoverViewProps> = ({
   currentUser,
   profiles,
+  isLoading = false,
+  loadError = null,
   likedProfileIds,
   onLike,
   onPass,
@@ -124,7 +128,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
 
       // 6. Search query (search through tags, name, bio, occupation, locality)
       if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
+        const q = searchQuery.toLowerCase().trim().replace(/^#/, '');
         const tagMatch = p.passions.some((t) => t.toLowerCase().includes(q));
         const nameMatch = p.name.toLowerCase().includes(q);
         const bioMatch = p.bio.toLowerCase().includes(q);
@@ -247,7 +251,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`py-2 px-3.5 rounded-xl border text-xs font-medium transition-colors flex items-center gap-1.5 ${
-                showFilters || selectedIntent !== 'all' || !verifiedOnly || selectedTags.length > 0
+                showFilters || selectedIntent !== 'all' || verifiedOnly || selectedTags.length > 0 || selectedLocalityFilter !== 'all'
                   ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400 font-semibold'
                   : 'bg-slate-800/80 hover:bg-slate-800 border-slate-700/60 text-slate-300'
               }`}
@@ -449,16 +453,20 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
       </div>
 
       {/* Profiles View (Grid vs Deck) */}
-      {filteredProfiles.length === 0 ? (
+      {isLoading || loadError ? (
+        <div role={loadError ? 'alert' : 'status'} className="bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center text-sm text-slate-300">
+          {loadError || 'Loading registered profiles…'}
+        </div>
+      ) : filteredProfiles.length === 0 ? (
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center space-y-4 max-w-lg mx-auto">
           <div className="w-12 h-12 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
             <SlidersHorizontal className="w-6 h-6" />
           </div>
-          <h3 className="text-lg font-bold text-white font-display">No verified singles match your filters</h3>
+          <h3 className="text-lg font-bold text-white font-display">No profiles match your filters</h3>
           <p className="text-xs text-slate-400 leading-relaxed">
             {selectedTags.length > 0
               ? `No local singles in your radius currently share ${selectedTags.join(', ')}. Try selecting different hobby tags or expanding your radius.`
-              : `Try expanding your search distance slider beyond ${maxDistance} miles or clearing keywords to explore more local singles nearby.`}
+              : `Try expanding your search distance slider beyond ${maxDistance} km or clearing keywords to explore more local singles nearby.`}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
             {selectedTags.length > 0 && (
@@ -471,7 +479,9 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
             )}
             <button
               onClick={() => {
-                setMaxDistance(30);
+                setMaxDistance(50);
+                setSelectedLocalityFilter('all');
+                onClearInitialTag?.();
                 setSelectedIntent('all');
                 setVerifiedOnly(false);
                 setSelectedTags([]);
@@ -479,7 +489,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
               }}
               className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs transition-colors"
             >
-              Reset All Filters (30 mi radius)
+              Reset All Filters (50 km radius)
             </button>
           </div>
         </div>
@@ -505,7 +515,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
         <div className="max-w-md mx-auto space-y-4">
           <div className="flex items-center justify-between text-xs text-slate-400 px-1">
             <span>Profile {(deckIndex % filteredProfiles.length) + 1} of {filteredProfiles.length}</span>
-            <span className="font-mono text-emerald-400">{currentDeckProfile.distanceMiles.toFixed(1)} miles away</span>
+            <span className="font-mono text-emerald-400">{(currentDeckProfile.distanceKm ?? currentDeckProfile.distanceMiles * 1.609344).toFixed(1)} km away</span>
           </div>
 
           <ProfileCard

@@ -24,7 +24,9 @@ import { Heart, MessageSquare, ShieldCheck, Sparkles, X, Coins, Gift, Wifi } fro
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<UserCurrentProfile>(initialCurrentUser);
-  const [profiles, setProfiles] = useState<SingleProfile[]>(localSinglesData);
+  const [profiles, setProfiles] = useState<SingleProfile[]>([]);
+  const [profilesLoading, setProfilesLoading] = useState(false);
+  const [profilesError, setProfilesError] = useState<string | null>(null);
   const [likedProfileIds, setLikedProfileIds] = useState<string[]>(['usr_maya_992', 'usr_julian_410']);
   const [activeTab, setActiveTab] = useState<'discover' | 'matches' | 'chat' | 'safety' | 'profile'>('discover');
   const [selectedProfileForModal, setSelectedProfileForModal] = useState<SingleProfile | null>(null);
@@ -476,7 +478,10 @@ export default function App() {
 
   // Refresh database profiles on login, location changes, and while browsing.
   useEffect(() => {
-    if (!isLoggedIn) { setProfiles(localSinglesData); return; }
+    if (!isLoggedIn) { setProfiles([]); setProfilesError(null); setProfilesLoading(false); return; }
+    setProfiles([]);
+    setProfilesLoading(true);
+    setProfilesError(null);
     const controller = new AbortController();
     const refresh = async () => {
       try {
@@ -486,22 +491,18 @@ export default function App() {
         });
         if (!response.ok) throw new Error('Discovery failed');
         const data = await response.json();
-        const real = data.profiles as SingleProfile[];
-        const ids = new Set(real.map(profile => profile.id));
-        const demos = localSinglesData.filter(profile => profile.id !== currentUser.id && !ids.has(profile.id))
-          .map(profile => {
-            const distanceKm = calculateDistanceKm(currentUser.coordinates.lat, currentUser.coordinates.lng, profile.coordinates.lat, profile.coordinates.lng);
-            return { ...profile, distanceKm, distanceMiles: distanceKm * 0.621371 };
-          });
-        // Alternate registered and demo profiles so both appear in the feed.
-        const mixed: SingleProfile[] = [];
-        for (let i = 0; i < Math.max(real.length, demos.length); i++) {
-          if (real[i]) mixed.push(real[i]);
-          if (demos[i]) mixed.push(demos[i]);
+        if (!Array.isArray(data.profiles)) throw new Error('Invalid discovery response');
+        if (!controller.signal.aborted) {
+          setProfiles(data.profiles.filter((profile: SingleProfile) => profile.id !== currentUser.id));
+          setProfilesError(null);
         }
-        if (!controller.signal.aborted) setProfiles(mixed);
       } catch {
-        if (!controller.signal.aborted) setWelcomeAlert('Unable to load registered profiles. Please try again.');
+        if (!controller.signal.aborted) {
+          setProfiles([]);
+          setProfilesError('Unable to load registered profiles. Please check your connection. Retrying automatically.');
+        }
+      } finally {
+        if (!controller.signal.aborted) setProfilesLoading(false);
       }
     };
     void refresh();
@@ -736,6 +737,8 @@ export default function App() {
           <DiscoverView
             currentUser={currentUser}
             profiles={profiles}
+            isLoading={profilesLoading}
+            loadError={profilesError}
             likedProfileIds={likedProfileIds}
             onLike={handleLike}
             onPass={handlePass}
