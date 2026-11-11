@@ -1,3 +1,4 @@
+import { websocketUrl } from './api';
 /**
  * Real-Time WebSocket and Signal Protocol Client Service
  */
@@ -64,9 +65,7 @@ class WebSocketService {
 
     this.setStatus('connecting');
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = window.location.host;
-    const wsUrl = `${protocol}//${host}/ws`;
+    const wsUrl = websocketUrl();
 
     try {
       this.ws = new WebSocket(wsUrl);

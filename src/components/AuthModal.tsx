@@ -1,3 +1,4 @@
+import { apiUrl } from '../services/api';
 import React, { useState } from 'react';
 import { 
   X, 
@@ -243,7 +244,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
 
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch(apiUrl('/api/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: loginEmail.trim(), password: loginPassword.trim() }),
@@ -354,7 +355,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   const handleQuickDemoLogin = async (demo: typeof DEMO_ACCOUNTS[0]) => {
     try {
-      const res = await fetch('/api/auth/demo-login', {
+      const res = await fetch(apiUrl('/api/auth/demo-login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: demo.email }),
@@ -432,7 +433,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
 
     try {
-      const res = await fetch('/api/auth/register', {
+      const res = await fetch(apiUrl('/api/auth/register'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

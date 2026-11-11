@@ -52,3 +52,15 @@ NODE_ENV=production npm start
 Set a private PostgreSQL connection URL in the deployment environment. Keep
 `.env.local` out of version control. Configure `GEMINI_API_KEY` if using AI features.
 # dating_new_2026
+
+## Separate backend domain
+
+Set `VITE_API_BASE_URL=https://dateapi.emaildevil.com` in `.env.local`, then
+run `npm run build`. Use the origin only, without `/api`; requests already
+include that path. Leaving this variable empty uses the frontend origin.
+The WebSocket connection uses the same backend at `/ws` over WSS for HTTPS.
+Vite embeds this public URL at build time; rebuild after changing it.
+
+On the backend set `CORS_ORIGIN=https://emaildevil.com` and restart the backend.
+Multiple allowed frontend origins can be comma-separated. The backend domain
+must have HTTPS and forward `/api/` and WebSocket upgrades on `/ws` to Node.

@@ -1,3 +1,4 @@
+import { apiUrl } from './services/api';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -179,7 +180,7 @@ export default function App() {
       }
 
       try {
-        const res = await fetch('/api/auth/session', {
+        const res = await fetch(apiUrl('/api/auth/session'), {
           headers: {
             'Authorization': `Bearer ${storedToken}`,
           },
@@ -228,7 +229,7 @@ export default function App() {
     const token = localStorage.getItem('cipherdate_session_token');
     if (token) {
       try {
-        await fetch('/api/auth/logout', {
+        await fetch(apiUrl('/api/auth/logout'), {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` },
         });
