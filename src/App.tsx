@@ -474,39 +474,59 @@ export default function App() {
     };
   }, [currentUser.id, chatSessions]);
 
+  // Refresh database profiles on login, location changes, and while browsing.
+  useEffect(() => {
+    if (!isLoggedIn) { setProfiles(localSinglesData); return; }
+    const controller = new AbortController();
+    const refresh = async () => {
+      try {
+        const response = await fetch(apiUrl('/api/discover'), {
+          headers: { Authorization: `Bearer ${localStorage.getItem('cipherdate_session_token')}` },
+          signal: controller.signal,
+        });
+        if (!response.ok) throw new Error('Discovery failed');
+        const data = await response.json();
+        const real = data.profiles as SingleProfile[];
+        const ids = new Set(real.map(profile => profile.id));
+        const demos = localSinglesData.filter(profile => profile.id !== currentUser.id && !ids.has(profile.id))
+          .map(profile => {
+            const distanceKm = calculateDistanceKm(currentUser.coordinates.lat, currentUser.coordinates.lng, profile.coordinates.lat, profile.coordinates.lng);
+            return { ...profile, distanceKm, distanceMiles: distanceKm * 0.621371 };
+          });
+        // Alternate registered and demo profiles so both appear in the feed.
+        const mixed: SingleProfile[] = [];
+        for (let i = 0; i < Math.max(real.length, demos.length); i++) {
+          if (real[i]) mixed.push(real[i]);
+          if (demos[i]) mixed.push(demos[i]);
+        }
+        if (!controller.signal.aborted) setProfiles(mixed);
+      } catch {
+        if (!controller.signal.aborted) setWelcomeAlert('Unable to load registered profiles. Please try again.');
+      }
+    };
+    void refresh();
+    const timer = window.setInterval(refresh, 30000);
+    return () => { controller.abort(); window.clearInterval(timer); };
+  }, [isLoggedIn, currentUser.id, currentUser.coordinates.lat, currentUser.coordinates.lng]);
+
   // Recalculate relative distances when user locality shifts (e.g. from Chrome geolocation or selector)
-  const handleLocationChange = (locality: string, city: string) => {
-    const matchedLoc = JAMSHEDPUR_LOCALITIES.find(
-      (l) => l.name.toLowerCase() === locality.toLowerCase()
-    );
-    const newCoords = matchedLoc
-      ? { lat: matchedLoc.coordinates.lat, lng: matchedLoc.coordinates.lng }
-      : currentUser.coordinates;
-
-    setCurrentUser((prev) => ({
-      ...prev,
-      locality,
-      neighborhood: locality,
-      city,
-      coordinates: newCoords,
-    }));
-
-    // Recalculate real distanceKm based on new locality coordinates
-    setProfiles((prev) =>
-      prev.map((p) => {
-        const newDistKm = calculateDistanceKm(
-          newCoords.lat,
-          newCoords.lng,
-          p.coordinates.lat,
-          p.coordinates.lng
-        );
-        return {
-          ...p,
-          distanceKm: newDistKm,
-          distanceMiles: Math.round(newDistKm * 0.621371 * 10) / 10,
-        };
-      })
-    );
+  const handleLocationChange = async (locality: string, city: string, coordinates?: { lat: number; lng: number }): Promise<boolean> => {
+    const matchedLoc = JAMSHEDPUR_LOCALITIES.find(l => l.name === locality);
+    const newCoords = coordinates || matchedLoc?.coordinates || currentUser.coordinates;
+    try {
+      const response = await fetch(apiUrl('/api/auth/location'), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('cipherdate_session_token')}` },
+        body: JSON.stringify({ locality, city, coordinates: newCoords }),
+      });
+      if (!response.ok) throw new Error('Location save failed');
+      const data = await response.json();
+      setCurrentUser(prev => ({ ...prev, ...data.user }));
+      return true;
+    } catch {
+      setWelcomeAlert('Could not save your location. Please try again.');
+      return false;
+    }
   };
 
   // Like a profile

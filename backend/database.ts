@@ -43,6 +43,9 @@ const Message = sequelize.define('EncryptedMessage', {
 }, { tableName: 'encrypted_messages', schema: 'cipherdate' });
 
 export const serverUsers = {
+  async list(): Promise<any[]> {
+    return (await User.findAll()).map(row => row.get('data'));
+  },
   async get(email: string): Promise<any> {
     return (await User.findByPk(email))?.get('data');
   },

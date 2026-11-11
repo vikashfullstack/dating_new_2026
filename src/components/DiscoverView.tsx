@@ -24,7 +24,7 @@ interface DiscoverViewProps {
   onPass: (profile: SingleProfile) => void;
   onOpenDetails: (profile: SingleProfile) => void;
   onStartChat: (profile: SingleProfile) => void;
-  onLocationChange: (neighborhood: string, city: string) => void;
+  onLocationChange: (neighborhood: string, city: string, coordinates?: { lat: number; lng: number }) => Promise<boolean>;
   initialSelectedTag?: string | null;
   onClearInitialTag?: () => void;
 }
@@ -42,7 +42,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
   onClearInitialTag,
 }) => {
   const [maxDistance, setMaxDistance] = useState<number>(currentUser.maxDistanceRadiusKm || 25);
-  const [verifiedOnly, setVerifiedOnly] = useState<boolean>(true);
+  const [verifiedOnly, setVerifiedOnly] = useState<boolean>(false);
   const [selectedIntent, setSelectedIntent] = useState<string>('all');
   const [selectedLocalityFilter, setSelectedLocalityFilter] = useState<string>('all');
   const [selectedTags, setSelectedTags] = useState<string[]>(
@@ -104,7 +104,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
       }
 
       // 2. Distance filter in Kilometers
-      const pDistKm = p.distanceKm || (p.distanceMiles * 1.6);
+      const pDistKm = p.distanceKm ?? (p.distanceMiles * 1.6);
       if (pDistKm > maxDistance) return false;
 
       // 3. Verified status filter
@@ -149,19 +149,18 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
     setLocationStatus('Querying Chrome browser GPS location...');
 
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
         setIsDetectingLocation(false);
         // Map Chrome GPS coordinates to the nearest Jamshedpur locality
         const nearest = findNearestLocality(pos.coords.latitude, pos.coords.longitude);
         setLocationStatus(`Chrome GPS Locked: Locality set to ${nearest.name} (Coordinates hidden for privacy)`);
-        onLocationChange(nearest.name, 'Jamshedpur');
+        const saved = await onLocationChange(nearest.name, 'Jamshedpur', { lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setLocationStatus(saved ? 'Location saved. Nearby profiles updated.' : 'Could not save location. Please try again.');
         setTimeout(() => setLocationStatus(null), 4500);
       },
       () => {
         setIsDetectingLocation(false);
-        const defaultLoc = JAMSHEDPUR_LOCALITIES.find(l => l.name === 'Kadma') || JAMSHEDPUR_LOCALITIES[0];
-        setLocationStatus(`Chrome GPS not shared. Calibrated to ${defaultLoc.name} locality.`);
-        onLocationChange(defaultLoc.name, 'Jamshedpur');
+        setLocationStatus('Location was not shared. Your saved location is unchanged.');
         setTimeout(() => setLocationStatus(null), 4000);
       },
       { timeout: 7000, enableHighAccuracy: true }

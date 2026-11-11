@@ -163,6 +163,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regLocality, setRegLocality] = useState('Kadma');
+  const [regCoordinates, setRegCoordinates] = useState<{ lat: number; lng: number } | undefined>();
   const [regIntent, setRegIntent] = useState<'Meaningful Dating' | 'Long-term Partnership' | 'Coffee & Conversation' | 'Spontaneous Exploration'>('Meaningful Dating');
   const [regOccupation, setRegOccupation] = useState('');
   const [regBio, setRegBio] = useState('');
@@ -221,13 +222,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         setIsDetectingGps(false);
         const nearest = findNearestLocality(pos.coords.latitude, pos.coords.longitude);
         setRegLocality(nearest.name);
+        setRegCoordinates({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setGpsNotification(`Location set to ${nearest.name} (Locality Only ❤️)`);
         setTimeout(() => setGpsNotification(null), 3500);
       },
       () => {
         setIsDetectingGps(false);
-        setGpsNotification('Location permission not granted. Selected Kadma.');
-        setRegLocality('Kadma');
+        setGpsNotification('Location was not shared. Your selected locality is unchanged.');
         setTimeout(() => setGpsNotification(null), 3500);
       },
       { timeout: 6000 }
@@ -443,6 +444,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           gender: regGender,
           lgbtqIdentity: regLgbtqIdentity,
           locality: regLocality,
+          coordinates: regCoordinates,
           photo: regAvatar,
           bio: regBio.trim(),
           intent: regIntent,
@@ -1057,7 +1059,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <div className="flex items-center gap-2 pt-1">
                   <select
                     value={regLocality}
-                    onChange={(e) => setRegLocality(e.target.value)}
+                    onChange={(e) => { setRegLocality(e.target.value); setRegCoordinates(undefined); }}
                     className="flex-1 min-w-0 bg-slate-900 border border-slate-700 text-white font-medium text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-rose-500 cursor-pointer"
                   >
                     {JAMSHEDPUR_LOCALITIES.map((loc) => (

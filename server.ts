@@ -4,6 +4,8 @@
  */
 
 import express from 'express';
+import { validCoordinates, discoveryProfiles } from './backend/discovery';
+import { JAMSHEDPUR_LOCALITIES } from './src/data/mockProfiles';
 import http from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 import path from 'path';
@@ -505,7 +507,7 @@ app.post('/api/auth/login', asyncRoute(async (req, res) => {
 }));
 
 app.post('/api/auth/register', asyncRoute(async (req, res) => {
-  const { name, email, age, locality, photo, bio, intent, passions, occupation, gender, lgbtqIdentity } = req.body;
+  const { name, email, age, locality, photo, bio, intent, passions, occupation, gender, lgbtqIdentity, coordinates } = req.body;
   if (!name || !email) {
     return res.status(400).json({ error: 'Name and email are required' });
   }
@@ -534,7 +536,8 @@ app.post('/api/auth/register', asyncRoute(async (req, res) => {
     occupation: occupation || 'Professional',
     intent: intent || 'Meaningful Dating',
     passions: Array.isArray(passions) && passions.length > 0 ? passions : ['#CoffeeLover', '#LocalDating'],
-    coordinates: { lat: 22.7952, lng: 86.1648 },
+    coordinates: validCoordinates(coordinates) ? coordinates
+      : (JAMSHEDPUR_LOCALITIES.find(place => place.name === locality)?.coordinates || { lat: 22.7952, lng: 86.1648 }),
     verification: {
       status: 'verified',
       hash: '0x' + crypto.randomBytes(4).toString('hex'),
@@ -589,6 +592,26 @@ app.post('/api/auth/logout', asyncRoute(async (req, res) => {
     await serverSessions.delete(session.token);
   }
   res.json({ success: true });
+}));
+
+app.get('/api/discover', asyncRoute(async (req, res) => {
+  const session = await getSessionFromReq(req);
+  if (!session) return res.status(401).json({ error: 'Unauthorized' });
+  res.json({ profiles: discoveryProfiles(await serverUsers.list(), session.user) });
+}));
+
+app.put('/api/auth/location', asyncRoute(async (req, res) => {
+  const session = await getSessionFromReq(req);
+  if (!session) return res.status(401).json({ error: 'Unauthorized' });
+  const { coordinates, locality, city } = req.body;
+  if (!validCoordinates(coordinates) || typeof locality !== 'string' || !locality.trim()
+      || typeof city !== 'string' || !city.trim()) {
+    return res.status(400).json({ error: 'A valid location is required' });
+  }
+  const user = { ...session.user, coordinates, locality: locality.trim(),
+    neighborhood: locality.trim(), city: city.trim(), locationUpdatedAt: Date.now() };
+  await serverUsers.set(user.email.toLowerCase(), user);
+  res.json({ success: true, user });
 }));
 
 app.put('/api/auth/profile', asyncRoute(async (req, res) => {
