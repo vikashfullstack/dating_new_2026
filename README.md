@@ -64,3 +64,37 @@ Vite embeds this public URL at build time; rebuild after changing it.
 On the backend set `CORS_ORIGIN=https://emaildevil.com` and restart the backend.
 Multiple allowed frontend origins can be comma-separated. The backend domain
 must have HTTPS and forward `/api/` and WebSocket upgrades on `/ws` to Node.
+
+## Chat and calls
+
+Deploy the frontend and backend together after chat/signaling changes, rebuild
+with `npm run build`, then restart your existing Node/PM2 service. Both people
+must sign in with separate accounts. Demo accounts do not answer messages or calls.
+The receiver gets a new conversation when the first message arrives. The latest
+500 stored sent/received messages are replayed after WebSocket sign-in.
+
+The reverse proxy for the API domain must forward WebSocket upgrades:
+
+```nginx
+location /ws {
+    proxy_pass http://127.0.0.1:3000;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host $host;
+    proxy_read_timeout 3600s;
+}
+```
+
+Calls use browser WebRTC and require HTTPS, microphone/camera permission, an
+online recipient and explicit acceptance. `VITE_RTC_ICE_SERVERS` optionally
+configures STUN/TURN servers as a JSON array at build time. A TURN relay is needed
+for networks where direct peer connections fail. Credentials in VITE settings
+are public: use short-lived TURN credentials rather than a permanent secret.
+The existing chat encryption uses a shared application seed; it is not a complete
+production end-to-end key exchange protocol.
+
+Run `node tests/realtime.integration.mjs` to test the real server handlers with
+isolated in-memory persistence and two WebSocket clients, without changing the
+configured database. This verifies message transport and call signaling; actual
+microphone/camera media must also be tested in two browsers.

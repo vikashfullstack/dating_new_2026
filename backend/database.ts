@@ -68,6 +68,10 @@ export const serverSessions = {
   async count() { return Session.count({ where: { expiresAt: { [Op.gt]: Date.now() } } }); },
 };
 export const encryptedMessageStore = {
+  async forUser(userId: string) {
+    return (await Message.findAll({ where: { [Op.or]: [{ data: { recipientId: userId } }, { data: { senderId: userId } }] }, order: [['createdAt', 'DESC']], limit: 500 }))
+      .reverse().map(row => row.get('data'));
+  },
   async push(data: any) { await Message.create({ id: data.id, data }); },
   async count() { return Message.count(); },
 };

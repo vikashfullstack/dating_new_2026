@@ -52,6 +52,8 @@ class WebSocketService {
   }
 
   public connect(userId: string, userName: string, locality: string, publicKey?: string) {
+    const sameUser = this.currentUserId === userId;
+    if (this.currentUserId && !sameUser) this.disconnect();
     this.currentUserId = userId;
     this.currentUserName = userName;
     this.currentLocality = locality;
@@ -59,7 +61,7 @@ class WebSocketService {
 
     if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
       // Already connecting/connected, just re-register
-      this.registerCurrentAuth();
+      if (!sameUser) this.registerCurrentAuth();
       return;
     }
 
@@ -72,7 +74,6 @@ class WebSocketService {
 
       this.ws.onopen = () => {
         this.reconnectAttempts = 0;
-        this.setStatus('connected');
         this.registerCurrentAuth();
       };
 
@@ -106,6 +107,7 @@ class WebSocketService {
 
     this.sendRaw({
       type: 'auth:register',
+      sessionToken: localStorage.getItem('cipherdate_session_token'),
       userId: this.currentUserId,
       userName: this.currentUserName,
       locality: this.currentLocality,
@@ -139,6 +141,9 @@ class WebSocketService {
 
   private handleIncomingPayload(payload: any) {
     switch (payload.type) {
+      case 'auth:confirmed':
+        this.setStatus('connected');
+        break;
       case 'presence:update':
         this.presenceListeners.forEach((cb) => cb(payload.onlineUsers || [], payload.totalOnline || 0));
         break;
@@ -173,6 +178,13 @@ class WebSocketService {
     }
   }
 
+  public disconnect() {
+    this.currentUserId = null;
+    clearTimeout(this.reconnectTimeout);
+    if (this.ws) { this.ws.onclose = null; this.ws.close(); this.ws = null; }
+    this.setStatus('disconnected');
+  }
+
   public sendEncryptedMessage(data: {
     id: string;
     chatId: string;
@@ -188,6 +200,7 @@ class WebSocketService {
     inviteDetails?: any;
     plainTextSummary?: string;
   }) {
+    if (this.status !== 'connected') throw new Error('Chat disconnected. Please try again.');
     this.sendRaw({
       type: 'chat:message',
       ...data,

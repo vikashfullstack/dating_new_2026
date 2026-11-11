@@ -8,6 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { DiscoverView } from './components/DiscoverView';
 import { MatchesView } from './components/MatchesView';
+import { CallPanel } from './components/CallPanel';
 import { ChatView } from './components/ChatView';
 import { SafetyHub } from './components/SafetyHub';
 import { ProfileView } from './components/ProfileView';
@@ -240,6 +241,8 @@ export default function App() {
       }
       localStorage.removeItem('cipherdate_session_token');
     }
+    wsService.disconnect();
+    setChatSessions([]);
     setIsLoggedIn(false);
     setAuthModalMode('login');
     setIsAuthModalOpen(true);
@@ -248,151 +251,15 @@ export default function App() {
   // Initial Pre-Configured Encrypted Chat Sessions
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
 
-  // Initialize initial encrypted chat messages with real AES-256-GCM payloads
   useEffect(() => {
-    const initializeEncryptedChats = async () => {
-      const mayaProfile = localSinglesData[0];
-      const julianProfile = localSinglesData[1];
-
-      const mayaSafety = await generateSafetyNumber(currentUser.id, mayaProfile.id);
-      const julianSafety = await generateSafetyNumber(currentUser.id, julianProfile.id);
-
-      // Encrypt initial messages for Maya (Sonari locality)
-      const mayaMsg1 = await encryptPayload(
-        'Hey Alex! Loved seeing your interest in architecture and local photography. Have you caught the sunset view at Marine Drive / Domuhani lately?'
-      );
-      const mayaMsg2 = await encryptPayload(
-        'Hi Maya! Yes, absolutely loved the bentwood furniture and ceramic craft in your bio. How is your ceramic studio project in Sonari coming along?'
-      );
-      const mayaMsg3 = await encryptPayload(
-        'It is going great! Just glazed a fresh batch of stoneware espresso cups. We should grab coffee at Cafe Regal in Bistupur sometime soon!'
-      );
-
-      // Encrypt initial messages for Julian (Bistupur locality)
-      const julianMsg1 = await encryptPayload(
-        'Hey Alex! Great to connect with another local design and photography enthusiast here in Jamshedpur.'
-      );
-      const julianMsg2 = await encryptPayload(
-        'Hey Julian! Huge fan of analog photography and sound engineering. Are you working out of the tech hub near Bistupur?'
-      );
-
-      const sessions: ChatSession[] = [
-        {
-          id: 'chat_maya_992',
-          matchId: mayaProfile.id,
-          matchProfile: mayaProfile,
-          unreadCount: 0,
-          sharedKeyFingerprint: mayaSafety.fingerprint,
-          safetyNumberBlocks: mayaSafety.blocks,
-          isSafetyNumberVerified: true,
-          encryptionMode: 'AES-GCM-256 (P-256 ECDH Derived)',
-          disappearingTimer: 0,
-          messages: [
-            {
-              id: 'msg_m1',
-              chatId: 'chat_maya_992',
-              senderId: mayaProfile.id,
-              senderName: mayaProfile.name,
-              senderAvatar: mayaProfile.photos[0],
-              recipientId: currentUser.id,
-              timestamp: Date.now() - 3600000 * 2,
-              plainText: 'Hey Alex! Loved seeing your interest in typography and mid-century design. Have you visited the new Alvar Aalto exhibit at Cooper Hewitt?',
-              ciphertext: mayaMsg1.ciphertext,
-              iv: mayaMsg1.iv,
-              salt: mayaMsg1.salt,
-              algorithm: 'AES-GCM-256',
-              isDecrypted: true,
-              status: 'read',
-            },
-            {
-              id: 'msg_m2',
-              chatId: 'chat_maya_992',
-              senderId: currentUser.id,
-              senderName: currentUser.name,
-              senderAvatar: currentUser.photos[0],
-              recipientId: mayaProfile.id,
-              timestamp: Date.now() - 3600000,
-              plainText: 'Hi Maya! Yes, absolutely loved the bentwood furniture studies there. How is your ceramic studio project in Greenpoint coming along?',
-              ciphertext: mayaMsg2.ciphertext,
-              iv: mayaMsg2.iv,
-              salt: mayaMsg2.salt,
-              algorithm: 'AES-GCM-256',
-              isDecrypted: true,
-              status: 'read',
-            },
-            {
-              id: 'msg_m3',
-              chatId: 'chat_maya_992',
-              senderId: mayaProfile.id,
-              senderName: mayaProfile.name,
-              senderAvatar: mayaProfile.photos[0],
-              recipientId: currentUser.id,
-              timestamp: Date.now() - 1800000,
-              plainText: 'It is going great! Just glazed a fresh batch of stoneware espresso cups. We should grab coffee at Sey Coffee sometime soon!',
-              ciphertext: mayaMsg3.ciphertext,
-              iv: mayaMsg3.iv,
-              salt: mayaMsg3.salt,
-              algorithm: 'AES-GCM-256',
-              isDecrypted: true,
-              status: 'delivered',
-            },
-          ],
-        },
-        {
-          id: 'chat_julian_410',
-          matchId: julianProfile.id,
-          matchProfile: julianProfile,
-          unreadCount: 0,
-          sharedKeyFingerprint: julianSafety.fingerprint,
-          safetyNumberBlocks: julianSafety.blocks,
-          isSafetyNumberVerified: false,
-          encryptionMode: 'AES-GCM-256 (P-256 ECDH Derived)',
-          disappearingTimer: 0,
-          messages: [
-            {
-              id: 'msg_j1',
-              chatId: 'chat_julian_410',
-              senderId: julianProfile.id,
-              senderName: julianProfile.name,
-              senderAvatar: julianProfile.photos[0],
-              recipientId: currentUser.id,
-              timestamp: Date.now() - 86400000,
-              plainText: 'Hey Alex! Great to connect with another design nerd. That Dieter Rams ethos in your bio is so spot on.',
-              ciphertext: julianMsg1.ciphertext,
-              iv: julianMsg1.iv,
-              salt: julianMsg1.salt,
-              algorithm: 'AES-GCM-256',
-              isDecrypted: true,
-              status: 'read',
-            },
-            {
-              id: 'msg_j2',
-              chatId: 'chat_julian_410',
-              senderId: currentUser.id,
-              senderName: currentUser.name,
-              senderAvatar: currentUser.photos[0],
-              recipientId: julianProfile.id,
-              timestamp: Date.now() - 43200000,
-              plainText: 'Hey Julian! Huge fan of analog audio craft. What are you currently designing at Vance Design Lab?',
-              ciphertext: julianMsg2.ciphertext,
-              iv: julianMsg2.iv,
-              salt: julianMsg2.salt,
-              algorithm: 'AES-GCM-256',
-              isDecrypted: true,
-              status: 'read',
-            },
-          ],
-        },
-      ];
-
-      setChatSessions(sessions);
-    };
-
-    initializeEncryptedChats();
-  }, []);
+    setChatSessions([]);
+    setActiveChatId(null);
+  }, [currentUser.id]);
 
   // Connect to Real-Time WebSocket Server and subscribe to E2EE Messages & Signal Protocol Events
   useEffect(() => {
+    if (!isLoggedIn) return;
+    let disposed = false;
     wsService.connect(currentUser.id, currentUser.name, currentUser.locality);
 
     const unsubStatus = wsService.onStatus((status) => {
@@ -420,61 +287,53 @@ export default function App() {
       }
     });
 
-    // Listen for partner simulated trigger relayed over WebSocket
-    const unsubPartnerTrigger = wsService.onPartnerSimulatedTrigger(async (payload) => {
-      const session = chatSessions.find((c) => c.id === payload.chatId);
-      if (!session) return;
-
-      let partnerReplyText = '';
-      if (payload.inviteDetails) {
-        partnerReplyText = `That sounds wonderful! ${payload.inviteDetails.venue} is a great public spot with delicious espresso. Looking forward to meeting in person on ${payload.inviteDetails.time}!`;
-      } else if (
-        payload.triggerMessage.toLowerCase().includes('coffee') ||
-        payload.triggerMessage.toLowerCase().includes('drink') ||
-        payload.triggerMessage.toLowerCase().includes('meet')
-      ) {
-        partnerReplyText = `I'd love to! There are some wonderful cafes near ${session.matchProfile.locality || session.matchProfile.neighborhood}. When are you free this week?`;
-      } else if (
-        payload.triggerMessage.toLowerCase().includes('design') ||
-        payload.triggerMessage.toLowerCase().includes('art') ||
-        payload.triggerMessage.toLowerCase().includes('book')
-      ) {
-        partnerReplyText = `That's fascinating! I completely agree. It's so refreshing to meet someone local who shares that same creative rhythm.`;
-      } else {
-        partnerReplyText = `Thanks for your note! I really appreciate how intentional and verified everyone is on CipherDate. What has your week been looking like?`;
-      }
-
-      const partnerEncrypted = await encryptPayload(partnerReplyText);
-
-      const partnerMessage: EncryptedMessage = {
-        id: `msg_reply_${Date.now()}`,
-        chatId: payload.chatId,
-        senderId: payload.senderId,
-        senderName: session.matchProfile.name,
-        senderAvatar: session.matchProfile.photos[0],
-        recipientId: currentUser.id,
-        timestamp: Date.now(),
-        plainText: partnerReplyText,
-        ciphertext: partnerEncrypted.ciphertext,
-        iv: partnerEncrypted.iv,
-        salt: partnerEncrypted.salt,
-        algorithm: 'AES-GCM-256',
-        isDecrypted: true,
-        status: 'delivered',
-      };
-
-      setChatSessions((prev) =>
-        prev.map((s) => (s.id === payload.chatId ? { ...s, messages: [...s.messages, partnerMessage] } : s))
-      );
+    const unsubMessage = wsService.onMessage(async (message) => {
+      if (message.recipientId !== currentUser.id && message.senderId !== currentUser.id) return;
+      const own = message.senderId === currentUser.id;
+      const peerId = own ? message.recipientId : message.senderId;
+      const plainText = await decryptPayload(message.ciphertext, message.iv, message.salt);
+      if (disposed) return;
+      const received: EncryptedMessage = { ...message, plainText, isDecrypted: true };
+      const safety = await generateSafetyNumber(currentUser.id, peerId);
+      if (disposed) return;
+      setChatSessions(prev => {
+        const existing = prev.find(c => c.matchId === peerId);
+        if (existing) return prev.map(c => c.id === existing.id && !c.messages.some(m => m.id === received.id)
+          ? { ...c, unreadCount: c.unreadCount + (own ? 0 : 1), messages: [...c.messages, { ...received, chatId: c.id }].sort((a, b) => a.timestamp - b.timestamp) } : c);
+        const partner = profiles.find(p => p.id === peerId) || {
+          ...initialCurrentUser, id: peerId, name: own ? 'Conversation' : message.senderName,
+          photos: [message.senderAvatar], initialGreeting: '', matchCompatibility: 0,
+          distanceKm: 0, distanceMiles: 0, tagline: '', education: '', height: '', lifestyle: [], isOnline: true,
+        } as SingleProfile;
+        return [...prev, {
+          id: message.chatId, matchId: peerId, matchProfile: partner,
+          unreadCount: own ? 0 : 1, sharedKeyFingerprint: safety.fingerprint, safetyNumberBlocks: safety.blocks,
+          isSafetyNumberVerified: false, encryptionMode: 'AES-GCM-256 (P-256 ECDH Derived)', disappearingTimer: 0,
+          messages: [received],
+        }];
+      });
+    });
+    const unsubAck = wsService.onAck(ack => {
+      setChatSessions(prev => prev.map(c => ({ ...c, messages: c.messages.map(m =>
+        m.id === ack.messageId ? { ...m, status: ack.status } : m) })));
     });
 
     return () => {
+      disposed = true;
       unsubStatus();
       unsubPresence();
       unsubSignal();
-      unsubPartnerTrigger();
+      unsubMessage();
+      unsubAck();
     };
-  }, [currentUser.id, chatSessions]);
+  }, [isLoggedIn, currentUser.id, currentUser.name, currentUser.locality, profiles]);
+
+  useEffect(() => {
+    setChatSessions(prev => prev.map(chat => {
+      const partner = profiles.find(profile => profile.id === chat.matchId);
+      return partner ? { ...chat, matchProfile: partner } : chat;
+    }));
+  }, [profiles]);
 
   // Refresh database profiles on login, location changes, and while browsing.
   useEffect(() => {
@@ -577,10 +436,10 @@ export default function App() {
 
     // Derive safety numbers
     const safety = await generateSafetyNumber(currentUser.id, profile.id);
-    const initialEncrypted = await encryptPayload(profile.initialGreeting);
+
 
     const newSession: ChatSession = {
-      id: `chat_${profile.id}_${Date.now()}`,
+      id: `chat_${[currentUser.id, profile.id].sort().join('_')}`,
       matchId: profile.id,
       matchProfile: profile,
       unreadCount: 0,
@@ -589,24 +448,7 @@ export default function App() {
       isSafetyNumberVerified: false,
       encryptionMode: 'AES-GCM-256 (P-256 ECDH Derived)',
       disappearingTimer: 0,
-      messages: [
-        {
-          id: `msg_init_${Date.now()}`,
-          chatId: `chat_${profile.id}`,
-          senderId: profile.id,
-          senderName: profile.name,
-          senderAvatar: profile.photos[0],
-          recipientId: currentUser.id,
-          timestamp: Date.now(),
-          plainText: profile.initialGreeting,
-          ciphertext: initialEncrypted.ciphertext,
-          iv: initialEncrypted.iv,
-          salt: initialEncrypted.salt,
-          algorithm: 'AES-GCM-256',
-          isDecrypted: true,
-          status: 'delivered',
-        },
-      ],
+      messages: [],
     };
 
     setChatSessions((prev) => [newSession, ...prev]);
@@ -618,6 +460,7 @@ export default function App() {
   const handleSendMessage = async (chatId: string, plainText: string, inviteDetails?: any) => {
     const session = chatSessions.find((c) => c.id === chatId);
     if (!session) return;
+    if (wsService.getStatus() !== 'connected') throw new Error('Chat is disconnected. Please wait for reconnection.');
 
     // Encrypt with Web Crypto AES-256-GCM
     const encrypted = await encryptPayload(plainText);
@@ -660,7 +503,6 @@ export default function App() {
       algorithm: 'AES-GCM-256',
       msgType: inviteDetails ? 'date-invite' : 'text',
       inviteDetails,
-      plainTextSummary: plainText,
     });
   };
 
@@ -818,6 +660,7 @@ export default function App() {
         )}
       </main>
 
+      {isLoggedIn && <CallPanel currentUser={currentUser} profiles={profiles} />}
       {/* Authentication (Login & Registration) Modal */}
       <AuthModal
         isOpen={isAuthModalOpen}

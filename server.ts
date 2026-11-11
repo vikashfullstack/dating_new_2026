@@ -199,9 +199,20 @@ wss.on('connection', (ws: WebSocket) => {
     try {
       const message = JSON.parse(data.toString());
 
+      if (message.type !== 'auth:register') {
+        const client = clients.get(ws);
+        if (!client) { ws.close(1008, 'Sign in required'); return; }
+        message.senderId = client.userId;
+        message.senderName = client.userName;
+      }
       switch (message.type) {
         // 1. Client Registers upon connecting
         case 'auth:register': {
+          const session = typeof message.sessionToken === 'string' ? await serverSessions.get(message.sessionToken) : null;
+          if (!session || Date.now() > session.expiresAt) { ws.close(1008, 'Invalid session'); return; }
+          message.userId = session.user.id;
+          message.userName = session.user.name;
+          message.locality = session.user.locality;
           clients.set(ws, {
             ws,
             userId: message.userId,
@@ -217,6 +228,9 @@ wss.on('connection', (ws: WebSocket) => {
           }));
 
           broadcastPresence();
+          for (const stored of await encryptedMessageStore.forUser(session.user.id)) {
+            if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'chat:incoming', message: stored }));
+          }
           break;
         }
 
@@ -243,7 +257,7 @@ wss.on('connection', (ws: WebSocket) => {
             iv: message.iv,
             salt: message.salt,
             algorithm: message.algorithm || 'AES-GCM-256',
-            status: 'delivered',
+            status: [...clients.values()].some(client => client.userId === message.recipientId && client.ws.readyState === WebSocket.OPEN) ? 'delivered' : 'sent',
             type: message.msgType || 'text',
             inviteDetails: message.inviteDetails,
           };
@@ -255,7 +269,7 @@ wss.on('connection', (ws: WebSocket) => {
             type: 'chat:ack',
             messageId: encryptedMsg.id,
             chatId: encryptedMsg.chatId,
-            status: 'delivered',
+            status: encryptedMsg.status,
             timestamp: Date.now(),
           }));
 
@@ -271,41 +285,6 @@ wss.on('connection', (ws: WebSocket) => {
             }
           }
 
-          // If recipient is a simulated partner (e.g. Maya or Julian) and no other live browser tab is logged in as them,
-          // echo realistic partner encrypted response back after a short natural delay
-          if (!recipientFound && (message.recipientId.startsWith('usr_maya') || message.recipientId.startsWith('usr_julian') || message.recipientId.startsWith('usr_aarav') || message.recipientId.startsWith('usr_ananya'))) {
-            setTimeout(() => {
-              if (ws.readyState === WebSocket.OPEN) {
-                // Partner echo signal acknowledgment
-                ws.send(JSON.stringify({
-                  type: 'signal:typing',
-                  chatId: message.chatId,
-                  senderId: message.recipientId,
-                  isTyping: true,
-                }));
-
-                setTimeout(() => {
-                  if (ws.readyState === WebSocket.OPEN) {
-                    ws.send(JSON.stringify({
-                      type: 'signal:typing',
-                      chatId: message.chatId,
-                      senderId: message.recipientId,
-                      isTyping: false,
-                    }));
-
-                    ws.send(JSON.stringify({
-                      type: 'chat:partner-simulated-trigger',
-                      chatId: message.chatId,
-                      recipientId: message.senderId,
-                      senderId: message.recipientId,
-                      triggerMessage: message.plainTextSummary || 'message',
-                      inviteDetails: message.inviteDetails,
-                    }));
-                  }
-                }, 1200);
-              }
-            }, 800);
-          }
           break;
         }
 
@@ -654,6 +633,7 @@ async function startServer() {
     console.error('[CipherDate] Request failed:', err.name);
     res.status(500).json({ error: 'Unable to complete request' });
   });
+  app.use('/api', (_req, res) => { res.status(404).json({ error: 'API endpoint not found. Check the deployed backend version.' }); });
   if (!isProd) {
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({

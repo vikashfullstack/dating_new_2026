@@ -87,15 +87,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
   const [prekeyBundle, setPrekeyBundle] = useState<SignalPrekeyBundle | null>(null);
   const [ratchetStepCount, setRatchetStepCount] = useState(7);
 
-  // Encrypted Calling State
-  const [activeCall, setActiveCall] = useState<{
-    type: 'audio' | 'video';
-    partner: SingleProfile;
-    status: 'connecting' | 'connected';
-    durationSeconds: number;
-    isMuted: boolean;
-    isVideoOff: boolean;
-  } | null>(null);
+  const [sendError, setSendError] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const typingTimeoutRef = useRef<any>(null);
@@ -126,41 +118,17 @@ export const ChatView: React.FC<ChatViewProps> = ({
     }, 1500);
   };
 
-  // Call timer simulation
-  useEffect(() => {
-    let interval: any = null;
-    if (activeCall && activeCall.status === 'connected') {
-      interval = setInterval(() => {
-        setActiveCall((prev) => prev ? { ...prev, durationSeconds: prev.durationSeconds + 1 } : null);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [activeCall?.status]);
-
   const handleStartCall = (type: 'audio' | 'video') => {
-    if (!currentChat) return;
-    setActiveCall({
-      type,
-      partner: currentChat.matchProfile,
-      status: 'connecting',
-      durationSeconds: 0,
-      isMuted: false,
-      isVideoOff: false,
-    });
-
-    setTimeout(() => {
-      setActiveCall((prev) => prev ? { ...prev, status: 'connected' } : null);
-    }, 1800);
-  };
-
-  const handleEndCall = () => {
-    setActiveCall(null);
+    if (currentChat) window.dispatchEvent(new CustomEvent('cipherdate:start-call', {
+      detail: { partner: currentChat.matchProfile, type },
+    }));
   };
 
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!inputText.trim() || !currentChat || isSending) return;
 
+    setSendError(null);
     const text = inputText.trim();
     setInputText('');
     setIsSending(true);
@@ -173,7 +141,8 @@ export const ChatView: React.FC<ChatViewProps> = ({
       setRatchetStepCount((prev) => prev + 1);
       await onSendMessage(currentChat.id, text);
     } catch (err) {
-      console.error('Failed to send encrypted message:', err);
+      setInputText(text);
+      setSendError(err instanceof Error ? err.message : 'Message could not be sent.');
     } finally {
       setIsSending(false);
     }
@@ -208,7 +177,8 @@ export const ChatView: React.FC<ChatViewProps> = ({
     <div className="whatsapp-chat max-w-[1500px] mx-auto px-0 sm:px-4 lg:px-6 py-0 sm:py-4 h-[calc(100dvh-8rem-env(safe-area-inset-bottom))] xl:h-[calc(100dvh-80px)] min-h-0 flex flex-col">
       <div className="flex-1 min-h-0 bg-[#111b21] border border-white/5 sm:rounded-xl overflow-hidden shadow-2xl flex flex-col md:flex-row">
         
-        {/* Left Sidebar: Encrypted Match Conversations */}
+        {sendError && <p role="alert" className="p-3 text-rose-300">{sendError}</p>}
+      {/* Left Sidebar: Encrypted Match Conversations */}
         <div className={`${showConversationList ? 'flex' : 'hidden'} md:flex w-full md:w-72 lg:w-[360px] min-h-0 border-r border-white/10 bg-[#111b21] flex-col shrink-0`}>
           
           <div className="px-5 pt-5 pb-3 space-y-4 shrink-0">
@@ -732,94 +702,6 @@ export const ChatView: React.FC<ChatViewProps> = ({
         </div>
       )}
 
-      {/* OVERLAY: Real-Time Signal Encrypted Voice / Video Call */}
-      {activeCall && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-fade-in">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full overflow-hidden shadow-2xl p-6 text-center space-y-6">
-            <div className="flex items-center justify-center gap-2 text-xs font-mono text-emerald-400 bg-emerald-950/60 py-1 px-3 rounded-full border border-emerald-500/30 w-fit mx-auto">
-              <Lock className="w-3.5 h-3.5" />
-              <span>Signal E2EE {activeCall.type === 'video' ? 'Video' : 'Audio'} Handshake</span>
-            </div>
-
-            <div className="relative mx-auto w-28 h-28">
-              <img
-                src={activeCall.partner.photos[0]}
-                alt={activeCall.partner.name}
-                className="w-28 h-28 rounded-full object-cover border-4 border-emerald-500/60 shadow-xl"
-              />
-              <span className="absolute bottom-0 right-0 p-2 rounded-full bg-emerald-500 text-slate-950 shadow-md">
-                {activeCall.type === 'video' ? <Video className="w-4 h-4" /> : <Phone className="w-4 h-4" />}
-              </span>
-            </div>
-
-            <div>
-              <h3 className="text-xl font-bold text-white font-display">
-                {activeCall.partner.name}
-              </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                {activeCall.partner.locality || activeCall.partner.neighborhood}, Jamshedpur
-              </p>
-              <p className="text-xs font-mono text-emerald-400 mt-2 font-semibold">
-                {activeCall.status === 'connecting'
-                  ? 'Signaling over WebSocket...'
-                  : `Encrypted Channel Active · ${Math.floor(activeCall.durationSeconds / 60)
-                      .toString()
-                      .padStart(2, '0')}:${(activeCall.durationSeconds % 60)
-                      .toString()
-                      .padStart(2, '0')}`}
-              </p>
-            </div>
-
-            {/* Simulated Audio/Video Wave */}
-            <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-center gap-1.5 h-12">
-              {[40, 75, 55, 90, 60, 85, 45, 95, 70, 50, 80, 65, 90, 40].map((h, i) => (
-                <span
-                  key={i}
-                  style={{ height: activeCall.status === 'connected' ? `${h}%` : '20%' }}
-                  className="w-1 bg-emerald-400/80 rounded-full transition-all duration-150 animate-pulse"
-                />
-              ))}
-            </div>
-
-            {/* Controls */}
-            <div className="flex items-center justify-center gap-4 pt-2">
-              <button
-                onClick={() => setActiveCall((prev) => prev ? { ...prev, isMuted: !prev.isMuted } : null)}
-                className={`p-3.5 rounded-full border transition-colors ${
-                  activeCall.isMuted
-                    ? 'bg-rose-500 text-white border-rose-600'
-                    : 'bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700'
-                }`}
-                title="Toggle Microphone"
-              >
-                {activeCall.isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-              </button>
-
-              <button
-                onClick={handleEndCall}
-                className="p-4 rounded-full bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/30 transition-all hover:scale-105"
-                title="End Encrypted Call"
-              >
-                <PhoneOff className="w-6 h-6" />
-              </button>
-
-              {activeCall.type === 'video' && (
-                <button
-                  onClick={() => setActiveCall((prev) => prev ? { ...prev, isVideoOff: !prev.isVideoOff } : null)}
-                  className={`p-3.5 rounded-full border transition-colors ${
-                    activeCall.isVideoOff
-                      ? 'bg-rose-500 text-white border-rose-600'
-                      : 'bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700'
-                  }`}
-                  title="Toggle Video Stream"
-                >
-                  {activeCall.isVideoOff ? <VideoOff className="w-5 h-5" /> : <Video className="w-5 h-5" />}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );
