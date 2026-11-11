@@ -68,21 +68,6 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
 
   const normalizeTag = (tag: string) => (tag.startsWith('#') ? tag : `#${tag}`);
 
-  // Extract all unique interest tags across all local profiles and tally their counts
-  const popularInterestTags = useMemo(() => {
-    const countMap: Record<string, number> = {};
-    profiles.forEach((p) => {
-      p.passions.forEach((passion) => {
-        const norm = normalizeTag(passion);
-        countMap[norm] = (countMap[norm] || 0) + 1;
-      });
-    });
-
-    return Object.entries(countMap)
-      .map(([tag, count]) => ({ tag, count }))
-      .sort((a, b) => b.count - a.count);
-  }, [profiles]);
-
   // Toggle selection of an interest tag
   const handleToggleTag = (tag: string) => {
     const normalized = normalizeTag(tag);
@@ -99,17 +84,17 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
   };
 
   // Filter profiles based on distance radius, locality filter, verified status, intent, search query, and hobby tags
-  const filteredProfiles = useMemo(() => {
+  const matchingProfiles = (locality = selectedLocalityFilter, tags = selectedTags, applyRadius = locality === 'all') => {
     return profiles.filter((p) => {
       // 1. Specific Locality Filter (if selected)
-      if (selectedLocalityFilter !== 'all') {
+      if (locality !== 'all') {
         const pLoc = (p.locality || p.neighborhood || '').toLowerCase();
-        if (pLoc !== selectedLocalityFilter.toLowerCase()) return false;
+        if (pLoc.trim() !== locality.toLowerCase().trim()) return false;
       }
 
       // 2. Distance filter in Kilometers
       const pDistKm = p.distanceKm ?? (p.distanceMiles * 1.6);
-      if (pDistKm > maxDistance) return false;
+      if (applyRadius && pDistKm > maxDistance) return false;
 
       // 3. Verified status filter
       if (verifiedOnly && p.verification.status !== 'verified') return false;
@@ -118,9 +103,9 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
       if (selectedIntent !== 'all' && p.intent !== selectedIntent) return false;
 
       // 5. Selected interest tags filter
-      if (selectedTags.length > 0) {
+      if (tags.length > 0) {
         const profileTagsNormalized = p.passions.map((tag) => normalizeTag(tag).toLowerCase());
-        const matchesAnyTag = selectedTags.some((selected) =>
+        const matchesAnyTag = tags.some((selected) =>
           profileTagsNormalized.includes(normalizeTag(selected).toLowerCase())
         );
         if (!matchesAnyTag) return false;
@@ -142,7 +127,24 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
 
       return true;
     });
-  }, [profiles, maxDistance, selectedLocalityFilter, verifiedOnly, selectedIntent, selectedTags, searchQuery]);
+  };
+  const filteredProfiles = matchingProfiles();
+  // Facets honor other active filters, excluding their own selection.
+  const localityCandidates = matchingProfiles('all', selectedTags, false);
+  const allLocalitiesCount = matchingProfiles('all').length;
+  const hobbyCandidates = matchingProfiles(selectedLocalityFilter, []);
+  const tagLabels = new Map<string, string>();
+  profiles.forEach(p => p.passions.forEach(tag => {
+    const label = normalizeTag(tag.trim());
+    tagLabels.set(label.toLowerCase(), label);
+  }));
+  const popularInterestTags = [...tagLabels].map(([key, tag]) => ({
+    tag,
+    count: hobbyCandidates.filter(p => p.passions.some(t => normalizeTag(t.trim()).toLowerCase() === key)).length,
+  })).sort((a, b) => b.count - a.count);
+  const activeFilterCount = Number(maxDistance !== (currentUser.maxDistanceRadiusKm || 25))
+    + Number(verifiedOnly) + Number(selectedIntent !== 'all')
+    + Number(selectedLocalityFilter !== 'all') + Number(Boolean(searchQuery.trim())) + selectedTags.length;
 
   const handleDetectLocation = () => {
     if (!navigator.geolocation) {
@@ -231,7 +233,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
             <div className="flex flex-col min-w-[130px]">
               <span className="text-[11px] text-slate-400">Match Radius</span>
               <span className="text-sm font-bold text-emerald-400 font-mono tabular-nums">
-                Within {maxDistance} km
+                {selectedLocalityFilter === 'all' ? `Within ${maxDistance} km` : `All of ${selectedLocalityFilter}`} 
               </span>
             </div>
             <input
@@ -240,6 +242,8 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
               max="50"
               step="1"
               value={maxDistance}
+              disabled={selectedLocalityFilter !== 'all'}
+              title={selectedLocalityFilter !== 'all' ? 'Select All Localities to use the distance radius' : 'Filter by distance'}
               onChange={(e) => setMaxDistance(Number(e.target.value))}
               className="w-32 sm:w-48 accent-emerald-400 cursor-pointer"
               aria-label="Match distance radius slider in kilometers"
@@ -258,9 +262,9 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
             >
               <Filter className="w-3.5 h-3.5" />
               <span>Filters</span>
-              {selectedTags.length > 0 && (
+              {activeFilterCount > 0 && (
                 <span className="w-4 h-4 rounded-full bg-emerald-400 text-slate-950 text-[10px] font-bold flex items-center justify-center font-mono">
-                  {selectedTags.length}
+                  {activeFilterCount}
                 </span>
               )}
             </button>
@@ -302,6 +306,9 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
             </span>
           </div>
 
+          <p className="text-[11px] text-slate-400">
+            Choose a locality to see its profiles at any distance. Other active filters still apply.
+          </p>
           <div className="flex flex-wrap items-center gap-1.5">
             <button
               type="button"
@@ -312,12 +319,12 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
                   : 'bg-slate-950/80 hover:bg-slate-800 text-slate-300 border-slate-800'
               }`}
             >
-              All Localities
+              All Localities ({allLocalitiesCount})
             </button>
             {JAMSHEDPUR_LOCALITIES.map((loc) => {
               const isSelected = selectedLocalityFilter.toLowerCase() === loc.name.toLowerCase();
-              const countInLocality = profiles.filter(
-                (p) => (p.locality || p.neighborhood || '').toLowerCase() === loc.name.toLowerCase()
+              const countInLocality = localityCandidates.filter(
+                (p) => (p.locality || p.neighborhood || '').trim().toLowerCase() === loc.name.trim().toLowerCase()
               ).length;
 
               return (
@@ -436,6 +443,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
                 <option value="Meaningful Dating">Meaningful Dating</option>
                 <option value="Long-term Partnership">Long-term Partnership</option>
                 <option value="Coffee & Conversation">Coffee & Conversation</option>
+                <option value="Spontaneous Exploration">Spontaneous Exploration</option>
               </select>
             </div>
 
@@ -452,6 +460,9 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
 
       </div>
 
+      <p role="status" className="text-xs text-slate-400">
+        {isLoading ? 'Loading profiles…' : loadError ? 'Profile counts unavailable' : `Showing ${filteredProfiles.length} of ${profiles.length} profiles · Your own profile is excluded`}
+      </p>
       {/* Profiles View (Grid vs Deck) */}
       {isLoading || loadError ? (
         <div role={loadError ? 'alert' : 'status'} className="bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center text-sm text-slate-300">
@@ -466,7 +477,9 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
           <p className="text-xs text-slate-400 leading-relaxed">
             {selectedTags.length > 0
               ? `No local singles in your radius currently share ${selectedTags.join(', ')}. Try selecting different hobby tags or expanding your radius.`
-              : `Try expanding your search distance slider beyond ${maxDistance} km or clearing keywords to explore more local singles nearby.`}
+              : selectedLocalityFilter !== 'all'
+                ? `No profiles in ${selectedLocalityFilter} match your other filters. Clear filters or choose another locality.`
+                : `Try expanding your search distance slider beyond ${maxDistance} km or clearing keywords to explore more local singles nearby.`}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
             {selectedTags.length > 0 && (

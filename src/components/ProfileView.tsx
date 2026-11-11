@@ -24,11 +24,12 @@ import {
   LogOut,
   Camera
 } from 'lucide-react';
-import { UserCurrentProfile, VerificationBadge } from '../types';
-import { localSinglesData, SUBSCRIPTION_PACKAGES } from '../data/mockProfiles';
+import { SingleProfile, UserCurrentProfile, VerificationBadge } from '../types';
+import { SUBSCRIPTION_PACKAGES } from '../data/mockProfiles';
 
 interface ProfileViewProps {
   currentUser: UserCurrentProfile;
+  profiles: SingleProfile[];
   onUpdateProfile: (updated: Partial<UserCurrentProfile>) => void;
   onOpenVerificationModal: () => void;
   onSearchByHobby?: (tag: string) => void;
@@ -56,6 +57,7 @@ const TRENDING_LOCAL_HOBBIES = [
 
 export const ProfileView: React.FC<ProfileViewProps> = ({
   currentUser,
+  profiles,
   onUpdateProfile,
   onOpenVerificationModal,
   onSearchByHobby,
@@ -128,21 +130,21 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     const map: Record<string, number> = {};
     passions.forEach((tag) => {
       const norm = normalizeTag(tag).toLowerCase();
-      const count = localSinglesData.filter((single) =>
+      const count = profiles.filter((single) =>
         single.passions.some((p) => normalizeTag(p).toLowerCase() === norm)
       ).length;
       map[tag] = count;
     });
     return map;
-  }, [passions]);
+  }, [passions, profiles]);
 
   // Total unique singles sharing at least one hobby
   const totalSinglesSharingHobbies = useMemo(() => {
     const userNorm = passions.map((p) => normalizeTag(p).toLowerCase());
-    return localSinglesData.filter((single) =>
+    return profiles.filter((single) =>
       single.passions.some((p) => userNorm.includes(normalizeTag(p).toLowerCase()))
     ).length;
-  }, [passions]);
+  }, [passions, profiles]);
 
   const handleProfilePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

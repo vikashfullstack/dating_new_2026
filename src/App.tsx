@@ -506,8 +506,10 @@ export default function App() {
       }
     };
     void refresh();
+    const onFocus = () => { void refresh(); };
+    window.addEventListener('focus', onFocus);
     const timer = window.setInterval(refresh, 30000);
-    return () => { controller.abort(); window.clearInterval(timer); };
+    return () => { controller.abort(); window.clearInterval(timer); window.removeEventListener('focus', onFocus); };
   }, [isLoggedIn, currentUser.id, currentUser.coordinates.lat, currentUser.coordinates.lng]);
 
   // Recalculate relative distances when user locality shifts (e.g. from Chrome geolocation or selector)
@@ -528,6 +530,25 @@ export default function App() {
       setWelcomeAlert('Could not save your location. Please try again.');
       return false;
     }
+  };
+
+  // Serialize edits so quick hobby changes cannot overwrite a later save.
+  const profileSaveQueue = React.useRef<Promise<void>>(Promise.resolve());
+  const handleUpdateProfile = (updated: Partial<UserCurrentProfile>) => {
+    profileSaveQueue.current = profileSaveQueue.current.then(async () => {
+      try {
+        const response = await fetch(apiUrl('/api/auth/profile'), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('cipherdate_session_token')}` },
+          body: JSON.stringify(updated),
+        });
+        if (!response.ok) throw new Error('Profile save failed');
+        const data = await response.json();
+        setCurrentUser(prev => ({ ...prev, ...data.user }));
+      } catch {
+        setWelcomeAlert('Profile changes could not be saved. Please try again.');
+      }
+    });
   };
 
   // Like a profile
@@ -781,7 +802,8 @@ export default function App() {
         {activeTab === 'profile' && (
           <ProfileView
             currentUser={currentUser}
-            onUpdateProfile={(updated) => setCurrentUser((prev) => ({ ...prev, ...updated }))}
+            profiles={profiles}
+            onUpdateProfile={handleUpdateProfile}
             onOpenVerificationModal={() => setIsVerificationModalOpen(true)}
             onSearchByHobby={handleSearchByHobby}
             onOpenSubscriptionModal={() => setIsSubscriptionModalOpen(true)}
