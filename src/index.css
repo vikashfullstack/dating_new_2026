@@ -334,3 +334,22 @@ body { background: var(--neu-surface); color: var(--neu-ink); }
 @media (prefers-reduced-motion: reduce) {
   .love-particle { animation: none !important; top: var(--rest); transform: rotate(-15deg); }
 }
+
+/* Chat has an opaque shell, so its decoration needs its own inner layer. */
+.chat-love-background {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  container-type: size;
+  pointer-events: none;
+  user-select: none;
+}
+.neumorphic-app .chat-message-area .chat-wallpaper {
+  background: transparent;
+}
+.chat-love-background .love-particle { animation-name: chat-love-fall; }
+@keyframes chat-love-fall {
+  from { transform: translate3d(0, -64px, 0) rotate(-25deg); }
+  50% { transform: translate3d(var(--drift), 50cqh, 0) rotate(25deg); }
+  to { transform: translate3d(0, calc(100cqh + 64px), 0) rotate(var(--turn)); }
+}

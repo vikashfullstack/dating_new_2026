@@ -15,7 +15,7 @@ export function LoveParticles() {
           '--delay': `${-((index * 13) % 45)}s`,
           '--drift': `${((index * 19) % 120) - 60}px`,
           '--turn': `${index % 2 ? 100 : -100}deg`,
-          '--rest': `${(index * 23) % 100}vh`,
+          '--rest': `${(index * 23) % 100}%`,
           '--opacity': 0.16 + (index % 4) * 0.035,
         } as React.CSSProperties;
 

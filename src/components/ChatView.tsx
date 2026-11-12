@@ -1,3 +1,4 @@
+import { LoveParticles } from './LoveParticles';
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   ShieldCheck, 
@@ -282,8 +283,10 @@ export const ChatView: React.FC<ChatViewProps> = ({
             </div>}
           </div>
 
-          {/* Messages Stream */}
-          <div className="chat-wallpaper flex-1 min-h-0 overflow-y-auto px-4 sm:px-8 lg:px-14 py-5 space-y-2">
+          {/* Keep decoration fixed within the conversation while messages scroll. */}
+          <div className="chat-message-area relative flex-1 min-h-0 overflow-hidden flex flex-col">
+            <div className="chat-love-background" aria-hidden="true"><LoveParticles /></div>
+          <div className="chat-wallpaper relative z-[1] flex-1 min-h-0 overflow-y-auto px-4 sm:px-8 lg:px-14 py-5 space-y-2">
             
             <div className="mx-auto mb-5 max-w-sm rounded-lg bg-[#eee3d7] px-4 py-2 text-center text-[11px] leading-relaxed text-[#77622c] shadow-sm">
               <Lock className="inline w-3 h-3 mr-1" /> Messages are end-to-end encrypted.
@@ -385,6 +388,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
             )}
 
             <div ref={messagesEndRef} />
+          </div>
           </div>
 
           {/* Input Footer */}
