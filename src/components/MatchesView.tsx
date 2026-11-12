@@ -74,7 +74,7 @@ export const MatchesView: React.FC<MatchesViewProps> = ({
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-black/30 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/30 pointer-events-none" />
 
                 <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
                   <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-slate-950/80 backdrop-blur-md border border-emerald-500/30 text-emerald-400 text-[11px] font-mono">
@@ -87,14 +87,13 @@ export const MatchesView: React.FC<MatchesViewProps> = ({
                   </div>
                 </div>
 
-                <div className="absolute bottom-3 left-4 right-4">
+                <div className="photo-caption absolute bottom-3 left-4 right-4">
                   <h3 className="text-xl font-bold text-white font-display">
                     {profile.name}, {profile.age}
                   </h3>
                   <div className="flex items-center gap-1.5 text-xs text-slate-300 mt-0.5">
                     <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                     <span>{profile.locality || profile.neighborhood} · {profile.distanceKm !== undefined ? `${profile.distanceKm.toFixed(1)} km` : `${profile.distanceMiles.toFixed(1)} km`}</span>
-                    <span className="text-[10px] text-emerald-400/80 font-mono">· Locality Only</span>
                   </div>
                 </div>
               </div>

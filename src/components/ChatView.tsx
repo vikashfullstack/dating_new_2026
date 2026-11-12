@@ -175,26 +175,26 @@ export const ChatView: React.FC<ChatViewProps> = ({
 
   return (
     <div className="whatsapp-chat max-w-[1500px] mx-auto px-0 sm:px-4 lg:px-6 py-0 sm:py-4 h-[calc(100dvh-8rem-env(safe-area-inset-bottom))] xl:h-[calc(100dvh-80px)] min-h-0 flex flex-col">
-      <div className="flex-1 min-h-0 bg-[#111b21] border border-white/5 sm:rounded-xl overflow-hidden shadow-2xl flex flex-col md:flex-row">
+      <div className="flex-1 min-h-0 bg-[#f5efe6] border border-white/5 sm:rounded-xl overflow-hidden shadow-2xl flex flex-col md:flex-row">
         
         {sendError && <p role="alert" className="p-3 text-rose-300">{sendError}</p>}
       {/* Left Sidebar: Encrypted Match Conversations */}
-        <div className={`${showConversationList ? 'flex' : 'hidden'} md:flex w-full md:w-72 lg:w-[360px] min-h-0 border-r border-white/10 bg-[#111b21] flex-col shrink-0`}>
+        <div className={`${showConversationList ? 'flex' : 'hidden'} md:flex w-full md:w-72 lg:w-[360px] min-h-0 border-r border-white/10 bg-[#f5efe6] flex-col shrink-0`}>
           
           <div className="px-5 pt-5 pb-3 space-y-4 shrink-0">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-semibold text-[#e9edef]">Chats<span className="text-xs text-[#8696a0] ml-2">{chatSessions.length}</span></h2>
-              <span className="flex items-center gap-1.5 text-xs text-[#8696a0]"><span className={`w-2 h-2 rounded-full ${wsStatus === 'connected' ? 'bg-[#00a884]' : 'bg-amber-400'}`} />{wsStatus === 'connected' ? 'Connected' : wsStatus === 'connecting' ? 'Connecting' : 'Offline'}</span>
+              <h2 className="text-2xl font-semibold text-[#4b3736]">Chats<span className="text-xs text-[#826b63] ml-2">{chatSessions.length}</span></h2>
+              <span className="flex items-center gap-1.5 text-xs text-[#826b63]"><span className={`w-2 h-2 rounded-full ${wsStatus === 'connected' ? 'bg-[#a65368]' : 'bg-amber-400'}`} />{wsStatus === 'connected' ? 'Connected' : wsStatus === 'connecting' ? 'Connecting' : 'Offline'}</span>
             </div>
-            <label className="flex items-center gap-3 rounded-lg bg-[#202c33] px-3 py-2 text-[#8696a0]">
+            <label className="flex items-center gap-3 rounded-lg bg-[#f5efe6] px-3 py-2 text-[#826b63]">
               <Search className="w-4 h-4 shrink-0" />
-              <input aria-label="Search conversations" placeholder="Search or start a new chat" value={chatSearch} onChange={(e) => setChatSearch(e.target.value)} className="min-w-0 w-full bg-transparent text-sm text-[#e9edef] outline-none placeholder:text-[#8696a0]" />
+              <input aria-label="Search conversations" placeholder="Search or start a new chat" value={chatSearch} onChange={(e) => setChatSearch(e.target.value)} className="min-w-0 w-full bg-transparent text-sm text-[#4b3736] outline-none placeholder:text-[#826b63]" />
             </label>
           </div>
 
           {/* Conversation List */}
           <div className="overflow-y-auto min-h-0 flex-1 divide-y divide-slate-800/60">
-            {!chatSessions.some(chat => `${chat.matchProfile.name} ${chat.matchProfile.locality || chat.matchProfile.neighborhood}`.toLowerCase().includes(chatSearch.toLowerCase())) && <p className="px-5 py-8 text-sm text-[#8696a0] text-center">No conversations found.</p>}
+            {!chatSessions.some(chat => `${chat.matchProfile.name} ${chat.matchProfile.locality || chat.matchProfile.neighborhood}`.toLowerCase().includes(chatSearch.toLowerCase())) && <p className="px-5 py-8 text-sm text-[#826b63] text-center">No conversations found.</p>}
             {chatSessions.filter(chat => `${chat.matchProfile.name} ${chat.matchProfile.locality || chat.matchProfile.neighborhood}`.toLowerCase().includes(chatSearch.toLowerCase())).map((chat) => {
               const isActive = chat.id === currentChat.id;
               const lastMsg = chat.messages[chat.messages.length - 1];
@@ -207,7 +207,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectChat(chat.id); setShowConversationList(false); } }}
                   onClick={() => { onSelectChat(chat.id); setShowConversationList(false); }}
                   className={`p-3.5 flex items-center gap-3 cursor-pointer transition-colors ${
-                    isActive ? 'bg-[#2a3942] text-white' : 'hover:bg-[#202c33] text-[#e9edef]'
+                    isActive ? 'bg-[#eee5da] text-white' : 'hover:bg-[#f5efe6] text-[#4b3736]'
                   }`}
                 >
                   {/* WhatsApp Circular Avatar with Online Presence Dot */}
@@ -265,16 +265,16 @@ export const ChatView: React.FC<ChatViewProps> = ({
         {/* Right Main Pane: Active Encrypted Conversation */}
         <div className={`${showConversationList ? 'hidden' : 'flex'} md:flex flex-1 flex-col bg-slate-900 min-w-0 min-h-0 relative`}>
           
-          <div className="relative px-3 sm:px-5 py-3 bg-[#202c33] flex items-center gap-3 shrink-0 z-10">
-            <button type="button" aria-label="All conversations" onClick={() => setShowConversationList(true)} className="md:hidden p-1 text-[#aebac1]"><ArrowLeft className="w-5 h-5" /></button>
+          <div className="relative px-3 sm:px-5 py-3 bg-[#f5efe6] flex items-center gap-3 shrink-0 z-10">
+            <button type="button" aria-label="All conversations" onClick={() => setShowConversationList(true)} className="md:hidden p-1 text-[#77615b]"><ArrowLeft className="w-5 h-5" /></button>
             <button type="button" onClick={() => onOpenProfileDetails?.(currentChat.matchProfile)} className="flex items-center gap-3 min-w-0 flex-1 text-left" title="View profile">
               <img src={currentChat.matchProfile.photos[0]} alt={currentChat.matchProfile.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
-              <span className="min-w-0"><span className="block truncate text-sm font-semibold text-[#e9edef]">{currentChat.matchProfile.name}</span><span className="block text-xs text-[#8696a0]">{isCurrentPeerTyping ? 'typing…' : currentChat.matchProfile.isOnline ? 'online' : 'offline'}</span></span>
+              <span className="min-w-0"><span className="block truncate text-sm font-semibold text-[#4b3736]">{currentChat.matchProfile.name}</span><span className="block text-xs text-[#826b63]">{isCurrentPeerTyping ? 'typing…' : currentChat.matchProfile.isOnline ? 'online' : 'offline'}</span></span>
             </button>
-            <button type="button" onClick={() => handleStartCall('video')} className="p-2 text-[#aebac1] hover:text-white" title="Start video call"><Video className="w-5 h-5" /></button>
-            <button type="button" onClick={() => handleStartCall('audio')} className="p-2 text-[#aebac1] hover:text-white" title="Start voice call"><Phone className="w-5 h-5" /></button>
-            <button type="button" onClick={() => setShowChatTools(!showChatTools)} aria-expanded={showChatTools} aria-label="Conversation options" className="p-2 text-[#aebac1] hover:text-white"><MoreVertical className="w-5 h-5" /></button>
-            {showChatTools && <div className="absolute right-3 top-full w-60 rounded-lg bg-[#233138] border border-white/5 py-2 shadow-xl text-sm text-[#e9edef]">
+            <button type="button" onClick={() => handleStartCall('video')} className="p-2 text-[#77615b] hover:text-white" title="Start video call"><Video className="w-5 h-5" /></button>
+            <button type="button" onClick={() => handleStartCall('audio')} className="p-2 text-[#77615b] hover:text-white" title="Start voice call"><Phone className="w-5 h-5" /></button>
+            <button type="button" onClick={() => setShowChatTools(!showChatTools)} aria-expanded={showChatTools} aria-label="Conversation options" className="p-2 text-[#77615b] hover:text-white"><MoreVertical className="w-5 h-5" /></button>
+            {showChatTools && <div className="absolute right-3 top-full w-60 rounded-lg bg-[#f5efe6] border border-white/5 py-2 shadow-xl text-sm text-[#4b3736]">
               <button type="button" className="block w-full px-4 py-3 text-left hover:bg-white/5" onClick={() => { setShowSafetyNumberModal(true); setShowChatTools(false); }}>Verify safety number</button>
               <button type="button" className="block w-full px-4 py-3 text-left hover:bg-white/5" onClick={() => { setShowSignalStationModal(true); setShowChatTools(false); }}>Connection & encryption</button>
               <button type="button" className="block w-full px-4 py-3 text-left hover:bg-white/5" onClick={() => { setShowRawCiphertext(!showRawCiphertext); setShowChatTools(false); }}>{showRawCiphertext ? 'Hide' : 'Show'} encrypted payloads</button>
@@ -285,7 +285,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
           {/* Messages Stream */}
           <div className="chat-wallpaper flex-1 min-h-0 overflow-y-auto px-4 sm:px-8 lg:px-14 py-5 space-y-2">
             
-            <div className="mx-auto mb-5 max-w-sm rounded-lg bg-[#182229] px-4 py-2 text-center text-[11px] leading-relaxed text-[#c6b77c] shadow-sm">
+            <div className="mx-auto mb-5 max-w-sm rounded-lg bg-[#eee3d7] px-4 py-2 text-center text-[11px] leading-relaxed text-[#77622c] shadow-sm">
               <Lock className="inline w-3 h-3 mr-1" /> Messages are end-to-end encrypted.
             </div>
 
@@ -305,8 +305,8 @@ export const ChatView: React.FC<ChatViewProps> = ({
                     <div
                       className={`px-3 py-2 shadow-sm relative break-words [overflow-wrap:anywhere] min-w-0 ${
                         isMe
-                          ? 'bg-[#005c4b] text-[#e9edef] rounded-lg rounded-tr-none'
-                          : 'bg-[#202c33] text-[#e9edef] rounded-lg rounded-tl-none'
+                          ? 'bg-[#ead0d5] text-[#4b3736] rounded-lg rounded-tr-none'
+                          : 'bg-[#f5efe6] text-[#4b3736] rounded-lg rounded-tl-none'
                       }`}
                     >
                       {/* Date Invite Card */}
@@ -336,13 +336,13 @@ export const ChatView: React.FC<ChatViewProps> = ({
 
                       {/* Message Subtext: Tabular Timestamp & Encryption Indicator */}
                       <div className={`flex items-center justify-end gap-1.5 mt-1 text-[10px] font-mono ${
-                        isMe ? 'text-[#a9c7bf]' : 'text-[#8696a0]'
+                        isMe ? 'text-[#885261]' : 'text-[#826b63]'
                       }`}>
                         <span>
                           {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                         <Lock className="w-2.5 h-2.5 opacity-80" />
-                        {isMe && <CheckCheck className="w-3.5 h-3.5 text-[#53bdeb]" />}
+                        {isMe && <CheckCheck className="w-3.5 h-3.5 text-[#a65368]" />}
                       </div>
                     </div>
                   </div>
@@ -390,26 +390,26 @@ export const ChatView: React.FC<ChatViewProps> = ({
           {/* Input Footer */}
           <form
             onSubmit={handleSend}
-            className="relative px-2 sm:px-4 py-3 bg-[#202c33] flex items-center gap-2 shrink-0"
+            className="relative px-2 sm:px-4 py-3 bg-[#f5efe6] flex items-center gap-2 shrink-0"
           >
-            {showEmojiPicker && <div className="absolute bottom-full left-2 rounded-xl bg-[#233138] border border-white/10 p-2 shadow-xl flex flex-wrap gap-1 max-w-[280px]">
+            {showEmojiPicker && <div className="absolute bottom-full left-2 rounded-xl bg-[#f5efe6] border border-white/10 p-2 shadow-xl flex flex-wrap gap-1 max-w-[280px]">
               {['😀', '😊', '❤️', '😂', '👍', '☕', '👋', '✨'].map(emoji => <button type="button" key={emoji} aria-label={`Insert ${emoji}`} onClick={() => { setInputText(text => text + emoji); setShowEmojiPicker(false); }} className="text-2xl p-2 hover:bg-white/10 rounded-lg">{emoji}</button>)}
             </div>}
-            <button type="button" aria-label="Choose emoji" aria-expanded={showEmojiPicker} onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="p-2 text-[#aebac1]"><Smile className="w-6 h-6" /></button>
-            <button type="button" title="Propose a meetup" onClick={() => setShowInviteModal(true)} className="p-1 text-[#aebac1]"><Plus className="w-6 h-6" /></button>
+            <button type="button" aria-label="Choose emoji" aria-expanded={showEmojiPicker} onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="p-2 text-[#77615b]"><Smile className="w-6 h-6" /></button>
+            <button type="button" title="Propose a meetup" onClick={() => setShowInviteModal(true)} className="p-1 text-[#77615b]"><Plus className="w-6 h-6" /></button>
             <input
               aria-label="Message"
               type="text"
               value={inputText}
               onChange={handleInputChange}
               placeholder="Type a message"
-              className="flex-1 min-w-0 bg-[#2a3942] border border-transparent text-[#e9edef] rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#00a884] placeholder:text-[#8696a0]"
+              className="flex-1 min-w-0 bg-[#eee5da] border border-transparent text-[#4b3736] rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#a65368] placeholder:text-[#826b63]"
             />
 
             <button
               type="submit"
               disabled={!inputText.trim() || isSending}
-              className="p-3 rounded-full bg-[#00a884] hover:bg-[#06cf9c] disabled:opacity-40 text-white font-semibold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/10 shrink-0"
+              className="p-3 rounded-full bg-[#a65368] hover:bg-[#8c4055] disabled:opacity-40 text-white font-semibold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/10 shrink-0"
               title="Encrypt & Send via WebSocket"
             >
               {isSending ? (

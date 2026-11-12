@@ -222,7 +222,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
                   title="Detect location using Chrome browser GPS"
                 >
                   <LocateFixed className={`w-3.5 h-3.5 text-emerald-400 ${isDetectingLocation ? 'animate-spin' : ''}`} />
-                  <span className="hidden sm:inline">Chrome GPS Location</span>
+                  <span className="hidden sm:inline">GPS Location</span>
                 </button>
               </div>
             </div>

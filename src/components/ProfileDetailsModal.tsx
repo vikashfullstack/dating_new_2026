@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, ShieldCheck, MapPin, Briefcase, GraduationCap, Heart, MessageSquare, ChevronLeft, ChevronRight, Lock, CheckCircle } from 'lucide-react';
+import { X, ShieldCheck, MapPin, Briefcase, GraduationCap, Heart, MessageSquare, ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
 import { SingleProfile } from '../types';
 
 interface ProfileDetailsModalProps {
@@ -68,7 +68,7 @@ export const ProfileDetailsModal: React.FC<ProfileDetailsModalProps> = ({
             />
             
             {/* Scrim overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-black/30 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/30 pointer-events-none" />
 
             {/* Photo indicators */}
             {profile.photos.length > 1 && (
@@ -103,7 +103,7 @@ export const ProfileDetailsModal: React.FC<ProfileDetailsModalProps> = ({
             )}
 
             {/* Bottom info on photo */}
-            <div className="absolute bottom-4 left-6 right-6">
+            <div className="photo-caption absolute bottom-4 left-6 right-6">
               <div className="flex items-center gap-2">
                 <h2 className="text-2xl font-bold text-white font-display">
                   {profile.name}, {profile.age}
@@ -224,13 +224,6 @@ export const ProfileDetailsModal: React.FC<ProfileDetailsModalProps> = ({
               </div>
             </div>
 
-            {/* End-to-End Encryption Notice */}
-            <div className="flex items-center gap-2 p-3 bg-slate-950/50 border border-slate-800 rounded-lg text-xs text-slate-400">
-              <Lock className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>
-                Conversations with {profile.name} are safeguarded by client-side AES-256-GCM encryption with ECDH key negotiation.
-              </span>
-            </div>
 
           </div>
         </div>

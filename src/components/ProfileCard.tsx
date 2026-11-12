@@ -42,7 +42,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
         />
 
         {/* Gradient Scrim */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-black/20 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/20 pointer-events-none" />
 
         {/* Top Badges (Floating subtle trust indicator) */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
@@ -60,7 +60,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
         </div>
 
         {/* Bottom Info on Image */}
-        <div className="absolute bottom-3 left-4 right-4">
+        <div className="photo-caption absolute bottom-3 left-4 right-4">
           <div className="flex items-baseline justify-between">
             <h3 className="text-xl font-bold text-white font-display flex items-center gap-1.5">
               <span>{profile.name}</span>
@@ -74,7 +74,6 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
           <div className="flex items-center gap-1.5 text-xs text-slate-300 mt-1">
             <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
             <span className="font-medium text-slate-200">{profile.locality || profile.neighborhood}</span>
-            <span className="text-[11px] text-slate-500 font-mono">· Locality Only</span>
           </div>
         </div>
       </div>

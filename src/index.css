@@ -99,7 +99,7 @@
 }
 
 @layer base {
-  html { background: #020617; }
+  html { background: #f5efe6; color-scheme: light; }
   body { margin: 0; min-width: 320px; }
   #root { min-height: 100dvh; }
   img, video, canvas { max-width: 100%; }
@@ -127,3 +127,210 @@
   background-size: 44px 44px;
 }
 .whatsapp-chat { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+
+/* Shared soft-surface system. Keep depth consistent across every app flow. */
+@theme {
+  --color-slate-950: #eee5da;
+  --color-slate-900: #f5efe6;
+  --color-slate-800: #e7dbce;
+  --color-slate-700: #d8c8ba;
+  --shadow-sm: 3px 3px 7px #d9cbbd, -3px -3px 7px #ffffff;
+  --shadow-md: 5px 5px 12px #d9cbbd, -5px -5px 12px #ffffff;
+  --shadow-lg: 8px 8px 18px #d9cbbd, -8px -8px 18px #ffffff;
+  --shadow-xl: 12px 12px 28px #d9cbbd, -12px -12px 28px #ffffff;
+  --shadow-2xl: 18px 18px 44px #d2c1b1, -18px -18px 44px #ffffff;
+}
+:root {
+  --neu-surface: #f5efe6;
+  --neu-ink: #4b3736;
+  --neu-muted: #77615b;
+  --neu-raised: 6px 6px 14px #d9cbbd, -6px -6px 14px #ffffff;
+  --neu-inset: inset 4px 4px 8px #d9cbbd, inset -4px -4px 8px #ffffff;
+}
+body { background: var(--neu-surface); color: var(--neu-ink); }
+.neumorphic-app { background: var(--neu-surface); color: var(--neu-ink); }
+.neumorphic-app :is(header, nav[aria-label="Mobile Navigation"]) {
+  background: #f5efe6f5;
+  border-color: #ffffff80;
+  box-shadow: 0 5px 18px #cdb9a655, inset 0 1px #fff;
+}
+.neumorphic-app :is(div, section, aside)[class*="bg-slate-"][class*="rounded-"],
+.neumorphic-app .whatsapp-chat {
+  background-color: var(--neu-surface);
+  border-color: #ffffff70;
+  box-shadow: var(--neu-raised);
+}
+.neumorphic-app button {
+  border-color: transparent;
+  transition: box-shadow 180ms ease, background-color 180ms ease, transform 180ms ease;
+}
+.neumorphic-app button[class*="rounded-"] {
+  background-color: var(--neu-surface);
+  box-shadow: 3px 3px 7px #d9cbbd, -3px -3px 7px #fff;
+}
+.neumorphic-app button:hover:not(:disabled) {
+  box-shadow: 2px 2px 5px #d9cbbd, -2px -2px 5px #fff;
+}
+.neumorphic-app button:active:not(:disabled),
+.neumorphic-app button[aria-pressed="true"],
+.neumorphic-app button[aria-selected="true"] { box-shadow: var(--neu-inset); }
+.neumorphic-app button:disabled { cursor: not-allowed; opacity: .5; }
+.neumorphic-app :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea) {
+  background: var(--neu-surface);
+  color: var(--neu-ink);
+  border: 1px solid transparent;
+  box-shadow: var(--neu-inset);
+}
+.neumorphic-app :is(input, select, textarea)::placeholder { color: #8b736b; }
+.neumorphic-app :is(input, select, textarea):focus-visible {
+  outline: 2px solid #a65368;
+  outline-offset: 3px;
+}
+.neumorphic-app :is(input[type="range"], input[type="checkbox"], input[type="radio"]) { accent-color: #a65368; }
+.neumorphic-app :focus-visible { outline: 2px solid #a65368; outline-offset: 4px; }
+.neumorphic-app [class*="border-slate-"] { border-color: #dfcdbc80; }
+.neumorphic-app [class*="bg-black/"][class*="fixed"] { background: #d7c5b6b8; }
+.neumorphic-app [class*="bg-gradient-"]:not(button):not([class*="from-black"]):not([class*="from-transparent"]) {
+  background-image: none;
+  background-color: var(--neu-surface);
+}
+.neumorphic-app button:is([class*="bg-emerald-500"], [class*="bg-emerald-600"], [class*="from-rose-500"]) {
+  background: #a65368;
+  color: #fff;
+  box-shadow: 4px 4px 10px #d7bfc0, -4px -4px 10px #fff, inset 1px 1px 1px #ffffff30;
+}
+.neumorphic-app button:is([class*="bg-emerald-500"], [class*="bg-emerald-600"], [class*="from-rose-500"]):hover:not(:disabled) { background: #8c4055; }
+.neumorphic-app button:is([class*="bg-emerald-500"], [class*="bg-emerald-600"], [class*="from-rose-500"]) :is(span, svg) { color: inherit; }
+.neumorphic-app .photo-caption,
+.neumorphic-app .photo-caption :is(h2, h3, span, p, svg) { color: #fff; text-shadow: 0 1px 5px #0008; }
+.neumorphic-app .chat-wallpaper {
+  background-color: #f5efe6;
+  background-image: radial-gradient(circle at 12px 12px, #d8c4b466 1px, transparent 1.5px);
+  background-size: 28px 28px;
+}
+.neumorphic-app [class*="blur-3xl"],
+.neumorphic-app :is(.animate-float-heart, .animate-float-heart-reverse) { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+.neumorphic-app .group:hover [class~="group-hover:text-emerald-400"]:hover { color: #a65368; }
+.neumorphic-app .group:hover [class~="group-hover:text-rose-300"]:hover { color: #a65368; }
+.neumorphic-app [class~="hover:text-emerald-300"]:hover { color: #a65368; }
+.neumorphic-app [class~="hover:text-emerald-400"]:hover { color: #a65368; }
+.neumorphic-app [class~="hover:text-rose-300"]:hover { color: #a65368; }
+.neumorphic-app [class~="hover:text-rose-400"]:hover { color: #a65368; }
+.neumorphic-app [class~="hover:text-slate-200"]:hover { color: #59423e; }
+.neumorphic-app [class~="hover:text-slate-950"]:hover { color: #4b3736; }
+.neumorphic-app [class~="hover:text-white"]:hover { color: #4b3736; }
+.neumorphic-app [class~="selection:text-emerald-300"] { color: #a65368; }
+.neumorphic-app [class~="text-amber-200"] { color: #826019; }
+.neumorphic-app [class~="text-amber-200/70"] { color: #826019; }
+.neumorphic-app [class~="text-amber-300"] { color: #826019; }
+.neumorphic-app [class~="text-amber-400"] { color: #826019; }
+.neumorphic-app [class~="text-amber-400/90"] { color: #826019; }
+.neumorphic-app [class~="text-blue-400"] { color: #316d9e; }
+.neumorphic-app [class~="text-emerald-300"] { color: #a65368; }
+.neumorphic-app [class~="text-emerald-400"] { color: #a65368; }
+.neumorphic-app [class~="text-emerald-400/70"] { color: #a65368; }
+.neumorphic-app [class~="text-emerald-400/90"] { color: #a65368; }
+.neumorphic-app [class~="text-pink-300"] { color: #a65368; }
+.neumorphic-app [class~="text-pink-400"] { color: #a65368; }
+.neumorphic-app [class~="text-rose-200"] { color: #a65368; }
+.neumorphic-app [class~="text-rose-200/80"] { color: #a65368; }
+.neumorphic-app [class~="text-rose-300"] { color: #a65368; }
+.neumorphic-app [class~="text-rose-300/80"] { color: #a65368; }
+.neumorphic-app [class~="text-rose-400"] { color: #a65368; }
+.neumorphic-app [class~="text-rose-400/60"] { color: #a65368; }
+.neumorphic-app [class~="text-rose-400/80"] { color: #a65368; }
+.neumorphic-app [class~="text-rose-500"] { color: #a65368; }
+.neumorphic-app [class~="text-slate-100"] { color: #4b3736; }
+.neumorphic-app [class~="text-slate-200"] { color: #59423e; }
+.neumorphic-app [class~="text-slate-300"] { color: #69514a; }
+.neumorphic-app [class~="text-slate-400"] { color: #77615b; }
+.neumorphic-app [class~="text-slate-500"] { color: #826b63; }
+.neumorphic-app [class~="text-slate-600"] { color: #77615b; }
+.neumorphic-app [class~="text-slate-700"] { color: #69514a; }
+.neumorphic-app [class~="text-slate-950"] { color: #4b3736; }
+.neumorphic-app [class~="text-slate-950/70"] { color: #4b3736; }
+.neumorphic-app [class~="text-white"] { color: #4b3736; }
+
+.neumorphic-app .photo-caption :is(h2, h3, span, p, svg) { color: #fff; }
+.neumorphic-app button:is([class*="bg-emerald-500"], [class*="bg-emerald-600"], [class*="from-rose-500"]),
+.neumorphic-app button:is([class*="bg-emerald-500"], [class*="bg-emerald-600"], [class*="from-rose-500"]) :is(span, svg) { color: #fff; }
+
+/* Pale status wells retain readable foregrounds on the light surface. */
+@theme {
+  --color-emerald-950: #eed9dc;
+  --color-emerald-900: #ead0d5;
+  --color-emerald-800: #e3c2ca;
+  --color-rose-950: #eedadd;
+  --color-rose-900: #ead0d5;
+  --color-pink-950: #efdcdf;
+  --color-pink-900: #ead0d8;
+  --color-amber-950: #ece4d4;
+  --color-amber-900: #e9dfc9;
+  --color-blue-950: #dae5ee;
+  --color-blue-900: #d2e0ec;
+  --color-purple-950: #e5dfec;
+  --color-purple-900: #ded5e8;
+}
+.neumorphic-app button[class*="border-rose-500/40"][class*="from-slate-"] {
+  background: var(--neu-surface);
+  box-shadow: var(--neu-inset);
+}
+
+/* Warm ivory and dusty rose accents throughout the shared utility palette. */
+@theme {
+  --color-emerald-50: #fbf0f1;
+  --color-emerald-100: #f6e4e8;
+  --color-emerald-200: #edcdd5;
+  --color-emerald-300: #dfa9b8;
+  --color-emerald-400: #c57c91;
+  --color-emerald-500: #a65368;
+  --color-emerald-600: #93465c;
+  --color-emerald-700: #803c50;
+  --color-rose-300: #dfa9b8;
+  --color-rose-400: #c57c91;
+  --color-rose-500: #a65368;
+  --color-rose-600: #93465c;
+  --color-pink-400: #c57c91;
+  --color-pink-500: #a65368;
+}
+.neumorphic-app ::selection { background: #ead0d5; color: #4b3736; }
+
+/* Decorative love artwork stays behind content and never captures interaction. */
+.neumorphic-app { position: relative; isolation: isolate; }
+.love-background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+.love-background > svg { width: 100%; height: 100%; }
+@media (max-width: 639px) {
+  .love-background > svg { width: 180%; max-width: none; margin-left: -40%; }
+}
+
+/* Slow staggered snowfall of rose line art, already distributed on first paint. */
+.love-particles { position: absolute; inset: 0; }
+.love-particle {
+  position: absolute;
+  top: 0;
+  left: var(--left);
+  width: var(--size);
+  height: var(--size);
+  color: #ac5870;
+  opacity: var(--opacity);
+  animation: love-fall var(--duration) var(--delay) linear infinite;
+}
+.love-particle svg { width: 100%; height: 100%; overflow: visible; }
+@keyframes love-fall {
+  from { transform: translate3d(0, -15vh, 0) rotate(-25deg); }
+  50% { transform: translate3d(var(--drift), 50vh, 0) rotate(25deg); }
+  to { transform: translate3d(0, 115vh, 0) rotate(var(--turn)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .love-particle { animation: none !important; top: var(--rest); transform: rotate(-15deg); }
+}

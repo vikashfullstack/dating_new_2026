@@ -1,3 +1,4 @@
+import { LoveParticles } from './components/LoveParticles';
 import { SoundAlerts } from './components/SoundAlerts';
 import { notificationSounds } from './services/notificationSounds';
 import { apiUrl } from './services/api';
@@ -572,8 +573,36 @@ export default function App() {
   const likedProfilesList = profiles.filter((p) => likedProfileIds.includes(p.id));
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500/30 selection:text-emerald-300">
+    <div className="neumorphic-app min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500/30 selection:text-emerald-300">
       
+      <div className="love-background" aria-hidden="true">
+        <LoveParticles />
+        <svg viewBox="0 0 1440 1000" preserveAspectRatio="xMidYMid slice" focusable="false">
+          <defs>
+            <path id="love-heart" d="M0 24C-18 9-54-14-54-42C-54-73-17-85 0-58C17-85 54-73 54-42C54-14 18 9 0 24Z" />
+            <radialGradient id="love-blush">
+              <stop stopColor="#d9a0ad" stopOpacity=".3" />
+              <stop offset="1" stopColor="#d9a0ad" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <ellipse cx="65" cy="290" rx="400" ry="440" fill="url(#love-blush)" />
+          <ellipse cx="1420" cy="760" rx="460" ry="500" fill="url(#love-blush)" />
+          <g fill="none" stroke="#b66c80" strokeWidth="1.5" opacity=".2">
+            <use href="#love-heart" transform="translate(100 190) rotate(-22) scale(2.6)" />
+            <use href="#love-heart" transform="translate(1360 430) rotate(20) scale(3.3)" />
+            <use href="#love-heart" transform="translate(210 900) rotate(-12) scale(1.4)" />
+            <path d="M-80 730C180 480 220 1040 470 850S750 750 820 1070" />
+            <path d="M1100-70C930 80 1400 100 1250 290S1420 620 1560 410" />
+          </g>
+          <g fill="#c98697" opacity=".12">
+            <use href="#love-heart" transform="translate(340 140) rotate(16) scale(.45)" />
+            <use href="#love-heart" transform="translate(1160 740) rotate(-18) scale(.65)" />
+            <use href="#love-heart" transform="translate(85 610) rotate(12) scale(.5)" />
+            <use href="#love-heart" transform="translate(990 950) rotate(24) scale(.35)" />
+          </g>
+        </svg>
+      </div>
+
       {/* Universal Top Bar Contract */}
       <Navbar
         activeTab={activeTab}
