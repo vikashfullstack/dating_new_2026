@@ -18,12 +18,22 @@ let server;
 const sockets = [];
 try {
   await build({entryPoints:['server.ts'], outfile:path.join(folder,'server.mjs'), bundle:true, platform:'node', format:'esm', packages:'external', plugins:[{name:'memory-database', setup(build){build.onResolve({filter:/backend\/database$/},()=>({path:'database',namespace:'test'}));build.onLoad({filter:/.*/,namespace:'test'},()=>({contents:users,loader:'js'}));}}]});
-  server = spawn(process.execPath,[path.join(folder,'server.mjs')],{env:{...process.env,NODE_ENV:'production',PORT:String(port)},stdio:['ignore','pipe','pipe']});
+  server = spawn(process.execPath,[path.join(folder,'server.mjs')],{env:{...process.env,NODE_ENV:'production',PORT:String(port),TURN_URLS:'turn:relay.example:3478?transport=udp',TURN_SHARED_SECRET:'integration-test-secret'},stdio:['ignore','pipe','pipe']});
   server.stderr.on('data', data => process.stderr.write(data));
   await new Promise((resolve,reject)=>{server.stdout.on('data',data=>{if(data.toString().includes('server running'))resolve();});server.once('exit',code=>reject(Error('Server exited '+code)));setTimeout(()=>reject(Error('Server timeout')),10000).unref();});
   const base = `http://127.0.0.1:${port}`;
   async function register(name) {const r=await fetch(base+'/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email:name+'@example.test',locality:'Sonari'})});return r.json();}
   const alice = await register('Alice'), bob = await register('Bob');
+  assert.equal((await fetch(base+'/api/rtc/config')).status, 401);
+  const rtcResponse = await fetch(base+'/api/rtc/config', {headers:{Authorization:`Bearer ${alice.sessionToken}`}});
+  assert.equal(rtcResponse.status, 200);
+  assert.equal(rtcResponse.headers.get('cache-control'), 'no-store');
+  const rtc = await rtcResponse.json();
+  assert.equal(rtc.relayConfigured, true);
+  assert.ok(rtc.iceServers[1].username.endsWith(':'+alice.user.id));
+  assert.ok(rtc.iceServers[1].credential);
+  assert.ok(!JSON.stringify(rtc).includes('integration-test-secret'));
+
   async function connect(account) {
     const ws = new WebSocket(`ws://127.0.0.1:${port}/ws`); sockets.push(ws);
     const inbox = []; ws.on('message',data=>inbox.push(JSON.parse(data)));

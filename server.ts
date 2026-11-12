@@ -1,3 +1,4 @@
+import { rtcConfiguration } from './backend/rtc';
 import { validateProfileMedia } from './src/utils/profileMedia';
 /**
  * @license
@@ -593,6 +594,18 @@ app.put('/api/auth/location', asyncRoute(async (req, res) => {
     neighborhood: locality.trim(), city: city.trim(), locationUpdatedAt: Date.now() };
   await serverUsers.set(user.email.toLowerCase(), user);
   res.json({ success: true, user });
+}));
+
+// TURN secrets stay server-side; clients receive only expiring relay credentials.
+app.get('/api/rtc/config', asyncRoute(async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  const session = await getSessionFromReq(req);
+  if (!session) return res.status(401).json({ error: 'Sign in to make calls.' });
+  try {
+    res.json(rtcConfiguration(session.user.id));
+  } catch {
+    res.status(503).json({ error: 'Call relay configuration is incomplete.' });
+  }
 }));
 
 app.put('/api/auth/profile', asyncRoute(async (req, res) => {

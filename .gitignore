@@ -6,3 +6,6 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Generated TURN credentials and private relay configuration
+.turn/
