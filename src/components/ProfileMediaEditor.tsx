@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Camera, Video, X } from 'lucide-react';
+import { Camera, Video, Trash2 } from 'lucide-react';
 import { UserCurrentProfile } from '../types';
 import { PHOTO_TYPES, VIDEO_TYPES, PHOTO_BYTES, VIDEO_BYTES, PHOTO_LIMIT, VIDEO_LIMIT, validateProfileMedia, readMediaFile } from '../utils/profileMedia';
 
@@ -73,16 +73,16 @@ export function ProfileMediaEditor({ currentUser, onUpdateProfile, isLoggedIn }:
         {photos.map((source, index) => (
           <div key={`${index}-${source.slice(-24)}`} className="relative rounded-xl bg-slate-950 overflow-hidden border border-slate-800">
             <img src={source} alt={`Your profile photo ${index + 1}`} className="w-full aspect-square object-cover" />
-            <div className="p-3 flex flex-wrap items-center justify-between gap-2">
-              {index === 0 ? <span className="text-xs text-emerald-400 font-semibold">Cover photo</span> : <button type="button" disabled={disabled} onClick={() => void run(() => save([source, ...photos.filter((_, i) => i !== index)], videos))} className="rounded-lg p-2 text-xs text-slate-300">Make cover</button>}
-              <button type="button" disabled={disabled || photos.length === 1} aria-label={`Remove photo ${index + 1}`} title={photos.length === 1 ? 'Keep at least one profile photo' : 'Remove photo'} onClick={() => void run(() => save(photos.filter((_, i) => i !== index), videos))} className="rounded-lg p-2 text-rose-400"><X className="w-4 h-4" /></button>
+            <div className="absolute bottom-2 left-2 right-2 flex items-center pointer-events-none">
+              {index === 0 ? <span className="media-cover-badge rounded-lg px-2 py-1.5 text-[11px] font-semibold">Cover photo</span> : <button type="button" disabled={disabled} onClick={() => void run(() => save([source, ...photos.filter((_, i) => i !== index)], videos))} className="media-overlay-control pointer-events-auto rounded-lg px-2 py-1.5 text-[11px] font-semibold">Make cover</button>}
             </div>
+            <button type="button" disabled={disabled || photos.length === 1} aria-label={`Remove photo ${index + 1}`} title={photos.length === 1 ? 'Keep at least one profile photo' : 'Remove photo'} onClick={() => void run(() => save(photos.filter((_, i) => i !== index), videos))} className="media-overlay-control absolute top-2 right-2 rounded-lg w-10 h-10 flex items-center justify-center"><Trash2 className="w-4 h-4" /></button>
           </div>
         ))}
         {videos.map((source, index) => (
-          <div key={`${index}-${source.slice(-24)}`} className="rounded-xl bg-slate-950 overflow-hidden border border-slate-800">
+          <div key={`${index}-${source.slice(-24)}`} className="relative rounded-xl bg-slate-950 overflow-hidden border border-slate-800">
             <video src={source} controls playsInline preload="metadata" aria-label={`Your profile video ${index + 1}`} className="w-full aspect-square object-contain" />
-            <div className="p-3 flex items-center justify-between gap-2"><span className="text-xs text-slate-400">Video {index + 1}</span><button type="button" disabled={disabled} aria-label={`Remove video ${index + 1}`} onClick={() => void run(() => save(photos, videos.filter((_, i) => i !== index)))} className="rounded-lg p-2 text-rose-400"><X className="w-4 h-4" /></button></div>
+            <button type="button" disabled={disabled} aria-label={`Remove video ${index + 1}`} onClick={() => void run(() => save(photos, videos.filter((_, i) => i !== index)))} className="media-overlay-control absolute top-2 right-2 rounded-lg w-10 h-10 flex items-center justify-center"><Trash2 className="w-4 h-4" /></button>
           </div>
         ))}
       </div>

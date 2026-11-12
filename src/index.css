@@ -353,3 +353,16 @@ body { background: var(--neu-surface); color: var(--neu-ink); }
   50% { transform: translate3d(var(--drift), 50cqh, 0) rotate(25deg); }
   to { transform: translate3d(0, calc(100cqh + 64px), 0) rotate(var(--turn)); }
 }
+
+/* Photo actions float over media without adding a footer to each tile. */
+.neumorphic-app #profile-media .media-overlay-control,
+.neumorphic-app #profile-media .media-cover-badge {
+  background: #f5efe6f5;
+  color: #803c50;
+  border: 1px solid #ffffffb3;
+  box-shadow: 0 2px 7px #35251f45;
+}
+.neumorphic-app #profile-media .media-overlay-control:hover:not(:disabled) {
+  background: #f6e4e8;
+  box-shadow: 0 2px 5px #35251f59;
+}

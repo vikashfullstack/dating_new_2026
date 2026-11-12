@@ -134,7 +134,7 @@ export const MatchesView: React.FC<MatchesViewProps> = ({
                     className="flex-1 py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-sm"
                   >
                     <MessageSquare className="w-3.5 h-3.5" />
-                    <span>Chat (E2EE)</span>
+                    <span>Chat</span>
                   </button>
                 </div>
               </div>
