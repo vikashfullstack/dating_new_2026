@@ -34,6 +34,7 @@ export interface SingleProfile {
   passions: string[];
   lifestyle: string[];
   photos: string[];
+  videos?: string[];
   verification: VerificationBadge;
   matchCompatibility: number; // e.g. 96%
   initialGreeting: string;
@@ -137,6 +138,7 @@ export interface UserCurrentProfile {
   intent: 'Long-term Partnership' | 'Meaningful Dating' | 'Coffee & Conversation' | 'Spontaneous Exploration';
   passions: string[];
   photos: string[];
+  videos?: string[];
   verification: VerificationBadge;
   maxDistanceRadiusMiles: number;
   maxDistanceRadiusKm?: number;

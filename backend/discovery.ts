@@ -23,7 +23,7 @@ export function discoveryProfiles(users: any[], viewer: any) {
       bio: user.bio || '', tagline: user.tagline || '', occupation: user.occupation || '',
       education: user.education || '', height: user.height || '',
       intent: user.intent || 'Meaningful Dating', passions: user.passions || [],
-      lifestyle: user.lifestyle || [], photos: user.photos || [],
+      lifestyle: user.lifestyle || [], photos: user.photos || [], videos: user.videos || [],
       verification: {
         status: user.verification?.status || 'unverified',
         trustScore: user.verification?.trustScore || 0,

@@ -1,3 +1,4 @@
+import { validateProfileMedia } from './src/utils/profileMedia';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -37,6 +38,7 @@ app.use('/api', (req, res, next) => {
   next();
 });
 
+app.use('/api/auth/profile', express.json({ limit: '30mb' }));
 app.use(express.json());
 
 // Node.js Backend Session Store & Registered Users
@@ -600,6 +602,13 @@ app.put('/api/auth/profile', asyncRoute(async (req, res) => {
   }
 
   const { id, email, tokens, verification, membershipTier, ...profileFields } = req.body;
+  if ('photos' in profileFields || 'videos' in profileFields) {
+    const invalid = validateProfileMedia(
+      'photos' in profileFields ? profileFields.photos : session.user.photos,
+      'videos' in profileFields ? profileFields.videos : session.user.videos ?? [],
+    );
+    if (invalid) return res.status(400).json({ error: invalid });
+  }
   const updatedUser = { ...session.user, ...profileFields };
   session.user = updatedUser;
   await serverSessions.set(session.token, session);

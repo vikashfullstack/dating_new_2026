@@ -1,3 +1,4 @@
+import { ProfileMediaEditor } from './ProfileMediaEditor';
 import React, { useState, useMemo } from 'react';
 import { 
   ShieldCheck, 
@@ -30,7 +31,7 @@ import { SUBSCRIPTION_PACKAGES } from '../data/mockProfiles';
 interface ProfileViewProps {
   currentUser: UserCurrentProfile;
   profiles: SingleProfile[];
-  onUpdateProfile: (updated: Partial<UserCurrentProfile>) => void;
+  onUpdateProfile: (updated: Partial<UserCurrentProfile>) => Promise<boolean>;
   onOpenVerificationModal: () => void;
   onSearchByHobby?: (tag: string) => void;
   onOpenSubscriptionModal: () => void;
@@ -146,18 +147,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     ).length;
   }, [passions, profiles]);
 
-  const handleProfilePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      if (dataUrl) {
-        onUpdateProfile({ photos: [dataUrl, ...(currentUser.photos?.slice(1) || [])] });
-      }
-    };
-    reader.readAsDataURL(file);
-  };
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -178,21 +167,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             <ShieldCheck className="w-4 h-4" />
           </div>
 
-          {/* Upload / Change Picture from device */}
-          <label
-            htmlFor="profile-picture-upload"
-            className="absolute -top-2 -left-2 p-2 rounded-xl bg-rose-500 hover:bg-rose-400 text-white shadow-lg cursor-pointer transition-all hover:scale-105 flex items-center justify-center border border-rose-400/50"
-            title="Upload new picture from device"
-          >
-            <Camera className="w-3.5 h-3.5" />
-            <input
-              id="profile-picture-upload"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleProfilePhotoUpload}
-            />
-          </label>
+          <a href="#profile-media" aria-label="Manage profile photos and videos" className="absolute -top-2 -left-2 p-2 rounded-xl bg-rose-500 shadow-lg text-white" title="Manage photos and videos">
+            <Camera className="w-4 h-4" />
+          </a>
         </div>
 
         <div className="flex-1 text-center sm:text-left space-y-2">
@@ -264,6 +241,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
         </div>
       </div>
+
+      <ProfileMediaEditor currentUser={currentUser} onUpdateProfile={onUpdateProfile} isLoggedIn={isLoggedIn} />
 
       {/* Interactive Interest & Hobbies Hub */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">

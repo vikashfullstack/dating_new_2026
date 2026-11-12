@@ -406,8 +406,8 @@ export default function App() {
 
   // Serialize edits so quick hobby changes cannot overwrite a later save.
   const profileSaveQueue = React.useRef<Promise<void>>(Promise.resolve());
-  const handleUpdateProfile = (updated: Partial<UserCurrentProfile>) => {
-    profileSaveQueue.current = profileSaveQueue.current.then(async () => {
+  const handleUpdateProfile = (updated: Partial<UserCurrentProfile>): Promise<boolean> => {
+    const save = profileSaveQueue.current.then(async () => {
       try {
         const response = await fetch(apiUrl('/api/auth/profile'), {
           method: 'PUT',
@@ -417,10 +417,14 @@ export default function App() {
         if (!response.ok) throw new Error('Profile save failed');
         const data = await response.json();
         setCurrentUser(prev => ({ ...prev, ...data.user }));
+        return true;
       } catch {
         setWelcomeAlert('Profile changes could not be saved. Please try again.');
+        return false;
       }
     });
+    profileSaveQueue.current = save.then(() => {});
+    return save;
   };
 
   // Like a profile

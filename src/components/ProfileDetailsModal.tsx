@@ -119,6 +119,17 @@ export const ProfileDetailsModal: React.FC<ProfileDetailsModalProps> = ({
             </div>
           </div>
 
+          {Boolean(profile.videos?.length) && (
+            <section aria-label={`${profile.name}'s videos`} className="p-6 space-y-3">
+              <h3 className="text-base font-bold text-white font-display">Videos</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {profile.videos?.map((source, index) => (
+                  <video key={`${profile.id}-${index}`} src={source} controls playsInline preload="metadata" aria-label={`${profile.name}'s video ${index + 1}`} className="w-full aspect-video rounded-xl bg-slate-950 object-contain" />
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* Detailed Content */}
           <div className="p-6 space-y-6">
 
