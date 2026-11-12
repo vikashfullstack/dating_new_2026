@@ -134,25 +134,25 @@
   --color-slate-900: #f5efe6;
   --color-slate-800: #e7dbce;
   --color-slate-700: #d8c8ba;
-  --shadow-sm: 3px 3px 7px #d9cbbd, -3px -3px 7px #ffffff;
-  --shadow-md: 5px 5px 12px #d9cbbd, -5px -5px 12px #ffffff;
-  --shadow-lg: 8px 8px 18px #d9cbbd, -8px -8px 18px #ffffff;
-  --shadow-xl: 12px 12px 28px #d9cbbd, -12px -12px 28px #ffffff;
-  --shadow-2xl: 18px 18px 44px #d2c1b1, -18px -18px 44px #ffffff;
+  --shadow-sm: 3px 4px 8px #49352b45, -3px -3px 7px #49352b38;
+  --shadow-md: 5px 7px 14px #49352b4d, -5px -5px 12px #49352b40;
+  --shadow-lg: 8px 10px 20px #49352b52, -8px -8px 18px #49352b45;
+  --shadow-xl: 12px 15px 30px #49352b59, -12px -12px 28px #49352b4d;
+  --shadow-2xl: 18px 22px 44px #35251f66, -18px -18px 44px #35251f59;
 }
 :root {
   --neu-surface: #f5efe6;
   --neu-ink: #4b3736;
   --neu-muted: #77615b;
-  --neu-raised: 6px 6px 14px #d9cbbd, -6px -6px 14px #ffffff;
-  --neu-inset: inset 4px 4px 8px #d9cbbd, inset -4px -4px 8px #ffffff;
+  --neu-raised: 7px 9px 18px #49352b52, -6px -6px 14px #49352b45;
+  --neu-inset: inset 4px 5px 9px #49352b45, inset -4px -4px 8px #49352b30;
 }
 body { background: var(--neu-surface); color: var(--neu-ink); }
 .neumorphic-app { background: var(--neu-surface); color: var(--neu-ink); }
 .neumorphic-app :is(header, nav[aria-label="Mobile Navigation"]) {
   background: #f5efe6f5;
   border-color: #ffffff80;
-  box-shadow: 0 5px 18px #cdb9a655, inset 0 1px #fff;
+  box-shadow: 0 5px 18px #49352b40, -4px -5px 14px #49352b38, inset 0 1px #ffffff70;
 }
 .neumorphic-app :is(div, section, aside)[class*="bg-slate-"][class*="rounded-"],
 .neumorphic-app .whatsapp-chat {
@@ -166,10 +166,10 @@ body { background: var(--neu-surface); color: var(--neu-ink); }
 }
 .neumorphic-app button[class*="rounded-"] {
   background-color: var(--neu-surface);
-  box-shadow: 3px 3px 7px #d9cbbd, -3px -3px 7px #fff;
+  box-shadow: 3px 4px 8px #49352b4d, -3px -3px 7px #49352b38;
 }
 .neumorphic-app button:hover:not(:disabled) {
-  box-shadow: 2px 2px 5px #d9cbbd, -2px -2px 5px #fff;
+  box-shadow: 2px 3px 6px #49352b45, -2px -2px 5px #49352b38;
 }
 .neumorphic-app button:active:not(:disabled),
 .neumorphic-app button[aria-pressed="true"],
@@ -197,7 +197,7 @@ body { background: var(--neu-surface); color: var(--neu-ink); }
 .neumorphic-app button:is([class*="bg-emerald-500"], [class*="bg-emerald-600"], [class*="from-rose-500"]) {
   background: #a65368;
   color: #fff;
-  box-shadow: 4px 4px 10px #d7bfc0, -4px -4px 10px #fff, inset 1px 1px 1px #ffffff30;
+  box-shadow: 4px 6px 12px #49253059, -4px -4px 10px #49253045, inset 1px 1px 1px #ffffff30;
 }
 .neumorphic-app button:is([class*="bg-emerald-500"], [class*="bg-emerald-600"], [class*="from-rose-500"]):hover:not(:disabled) { background: #8c4055; }
 .neumorphic-app button:is([class*="bg-emerald-500"], [class*="bg-emerald-600"], [class*="from-rose-500"]) :is(span, svg) { color: inherit; }
